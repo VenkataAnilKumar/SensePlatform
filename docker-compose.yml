@@ -1,11 +1,13 @@
 ###############################################################################
-# Sense Platform — Phase 1 Stack
-# Self-hosted WebRTC + AI Agent (no cloud dependencies)
+# Sense Platform — Phase 1 + 2 Stack
+# Self-hosted WebRTC + AI Agent + API Gateway (no cloud dependencies)
 #
 # Services:
-#   sense-relay   — LiveKit-based WebRTC media server (port 7880)
-#   redis         — Room state + pub/sub for Sense Relay
-#   sense-mind    — AI agent engine (joins relay room automatically)
+#   sense-relay   — LiveKit-based WebRTC media server       (port 7880)
+#   sense-mind    — AI agent engine + Vision Lenses          (port 8080)
+#   sense-gate    — API gateway, auth, multi-tenancy         (port 3000)
+#   postgres      — Tenant data + usage metering
+#   redis         — Room state, pub/sub, rate limiting
 #
 # Quick start:
 #   cp .env.example .env       # add your LLM API key
@@ -17,16 +19,50 @@ version: "3.9"
 services:
 
   # ─────────────────────────────────────────────────────────────────────────
-  # Sense Relay — Self-hosted WebRTC SFU
-  # Built on LiveKit (Apache 2.0). No external signaling cloud.
+  # Postgres — Tenant data, API keys, usage records
+  # ─────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sense
+      POSTGRES_PASSWORD: sense
+      POSTGRES_DB: sense_gate
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sense -d sense_gate"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Redis — Room state (Sense Relay), pub/sub, rate limiting (Sense Gate)
+  # ─────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Sense Relay — Self-hosted WebRTC SFU (LiveKit engine, Apache 2.0)
   # ─────────────────────────────────────────────────────────────────────────
   sense-relay:
     image: livekit/livekit-server:latest
     command: --config /etc/sense-relay/sense-relay.yaml
     ports:
-      - "7880:7880"            # WebSocket / HTTP API
-      - "7881:7881/tcp"        # WebRTC TCP fallback
-      - "50000-50020:50000-50020/udp"  # WebRTC UDP media (narrow range for dev)
+      - "7880:7880"                        # WebSocket / HTTP API
+      - "7881:7881/tcp"                    # WebRTC TCP fallback
+      - "50000-50020:50000-50020/udp"      # WebRTC UDP media
     volumes:
       - ./services/relay/sense-relay.yaml:/etc/sense-relay/sense-relay.yaml:ro
     environment:
@@ -42,53 +78,62 @@ services:
     restart: unless-stopped
 
   # ─────────────────────────────────────────────────────────────────────────
-  # Redis — Distributed room state and pub/sub for Sense Relay
+  # Sense Gate — API Gateway, Auth, Multi-tenancy
   # ─────────────────────────────────────────────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    command: redis-server --save "" --appendonly no
+  sense-gate:
+    build:
+      context: ./services/gate
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://sense:sense@postgres:5432/sense_gate"
+      REDIS_URL: "redis://redis:6379/0"
+      RELAY_URL: "ws://sense-relay:7880"
+      RELAY_API_KEY: "sense_gateway"
+      RELAY_API_SECRET: "secret_change_in_production"
+      MIND_URL: "http://sense-mind:8080"
+      JWT_SECRET: "${SENSE_JWT_SECRET:-sense_jwt_secret_change_in_production}"
+      DEBUG: "${DEBUG:-false}"
     ports:
-      - "6379:6379"
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      sense-relay:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 15s
     restart: unless-stopped
 
   # ─────────────────────────────────────────────────────────────────────────
   # Sense Mind — AI Agent Engine
-  # Joins the "default" Sense Relay room automatically on startup.
-  # Mount your agent script at /app/agent.py or use the example below.
   # ─────────────────────────────────────────────────────────────────────────
   sense-mind:
     build:
       context: ./services/mind
       dockerfile: Dockerfile
     environment:
-      # Relay connection
       SENSE_RELAY_URL: "ws://sense-relay:7880"
       SENSE_RELAY_API_KEY: "sense_gateway"
       SENSE_RELAY_SECRET: "secret_change_in_production"
       SENSE_ROOM: "default"
-
-      # LLM (set your key in .env or override here)
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
-
-      # STT / TTS
       DEEPGRAM_API_KEY: "${DEEPGRAM_API_KEY:-}"
       ELEVENLABS_API_KEY: "${ELEVENLABS_API_KEY:-}"
-
-      # Agent HTTP API
       SENSE_MIND_PORT: "8080"
     ports:
-      - "8080:8080"            # Health + control API
+      - "8080:8080"
     depends_on:
       sense-relay:
         condition: service_healthy
     volumes:
-      - ./examples:/app/examples:ro   # mount example agents
+      - ./examples:/app/examples:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 15s
@@ -98,7 +143,13 @@ services:
     restart: unless-stopped
 
 ###############################################################################
-# Shared network — all services communicate on sense-net
+# Volumes
+###############################################################################
+volumes:
+  postgres_data:
+
+###############################################################################
+# Network
 ###############################################################################
 networks:
   default:
