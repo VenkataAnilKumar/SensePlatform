@@ -1,0 +1,23 @@
+{
+  "name": "sense-js",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sense Platform JavaScript/TypeScript SDK monorepo",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint packages/*/src/**/*.ts",
+    "typecheck": "tsc --noEmit --project tsconfig.base.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.6.0",
+    "eslint": "^9.0.0"
+  }
+}
