@@ -1,12 +1,13 @@
 ###############################################################################
-# Sense Platform — Phase 1 + 2 Stack
-# Self-hosted WebRTC + AI Agent + API Gateway (no cloud dependencies)
+# Sense Platform — Phase 1 + 2 + 3 Stack
+# Self-hosted WebRTC + AI Agent + API Gateway + Real-time Messaging
 #
 # Services:
 #   sense-relay   — LiveKit-based WebRTC media server       (port 7880)
 #   sense-mind    — AI agent engine + Vision Lenses          (port 8080)
 #   sense-gate    — API gateway, auth, multi-tenancy         (port 3000)
-#   postgres      — Tenant data + usage metering
+#   sense-wire    — Real-time WebSocket messaging            (port 3001)
+#   postgres      — Tenant data, messages, usage metering
 #   redis         — Room state, pub/sub, rate limiting
 #
 # Quick start:
@@ -26,11 +27,12 @@ services:
     environment:
       POSTGRES_USER: sense
       POSTGRES_PASSWORD: sense
-      POSTGRES_DB: sense_gate
+      POSTGRES_DB: sense_gate       # default db; init.sql creates sense_wire too
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./services/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sense -d sense_gate"]
       interval: 5s
@@ -104,6 +106,34 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Sense Wire — Real-time Messaging (WebSocket + Postgres + Redis)
+  # ─────────────────────────────────────────────────────────────────────────
+  sense-wire:
+    build:
+      context: ./services/wire
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://sense:sense@postgres:5432/sense_wire"
+      REDIS_URL: "redis://redis:6379/1"
+      JWT_SECRET: "${SENSE_JWT_SECRET:-sense_jwt_secret_change_in_production}"
+      JWT_ALGORITHM: "HS256"
+      DEBUG: "${DEBUG:-false}"
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
       interval: 10s
       timeout: 5s
       retries: 5
