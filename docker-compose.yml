@@ -1,12 +1,13 @@
 ###############################################################################
-# Sense Platform — Phase 1 + 2 + 3 Stack
-# Self-hosted WebRTC + AI Agent + API Gateway + Real-time Messaging
+# Sense Platform — Phase 1–5 Stack
+# Self-hosted WebRTC + AI Agent + API Gateway + Messaging + Developer Dashboard
 #
 # Services:
 #   sense-relay   — LiveKit-based WebRTC media server       (port 7880)
 #   sense-mind    — AI agent engine + Vision Lenses          (port 8080)
 #   sense-gate    — API gateway, auth, multi-tenancy         (port 3000)
 #   sense-wire    — Real-time WebSocket messaging            (port 3001)
+#   sense-console — Developer dashboard (Next.js)            (port 4000)
 #   postgres      — Tenant data, messages, usage metering
 #   redis         — Room state, pub/sub, rate limiting
 #
@@ -166,6 +167,32 @@ services:
       - ./examples:/app/examples:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Sense Console — Developer Dashboard (Next.js)
+  # ─────────────────────────────────────────────────────────────────────────
+  sense-console:
+    build:
+      context: ./services/console
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GATE_URL: "http://localhost:3000"
+        NEXT_PUBLIC_WIRE_URL: "ws://localhost:3001"
+    environment:
+      NEXT_PUBLIC_GATE_URL: "http://sense-gate:3000"
+      NEXT_PUBLIC_WIRE_URL: "ws://sense-wire:3001"
+    ports:
+      - "4000:4000"
+    depends_on:
+      sense-gate:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000"]
       interval: 15s
       timeout: 5s
       retries: 5
