@@ -1,0 +1,38 @@
+# Sense Relay — WebRTC Media Server Configuration
+# Self-hosted WebRTC SFU for Sense Platform
+
+port: 7880
+
+# Redis for distributed room state and pub/sub
+redis:
+  address: redis:6379
+
+# WebRTC port range (open these on your firewall)
+rtc:
+  port_range_start: 50000
+  port_range_end: 60000
+  tcp_port: 7881
+
+# API keys for Sense Gate to communicate with Sense Relay
+keys:
+  sense_gateway: secret_change_in_production
+
+# Prometheus metrics
+prometheus_port: 6789
+
+# Logging
+logging:
+  level: info
+  json: true
+
+# Room defaults
+room:
+  empty_timeout: 300        # seconds before empty room is cleaned up
+  max_participants: 100
+  auto_create: true
+
+# TURN server (for NAT traversal)
+turn:
+  enabled: false            # enable in production with a TURN server
+  # domain: turn.yourdomain.com
+  # tls_port: 5349

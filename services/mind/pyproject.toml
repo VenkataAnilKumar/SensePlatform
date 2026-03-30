@@ -1,0 +1,125 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sense-mind"
+version = "0.1.0"
+description = "Sense Mind — AI Agent Engine for the Sense Platform"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+
+keywords = ["ai", "agent", "webrtc", "livekit", "vision", "llm", "real-time"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Core runtime dependencies
+dependencies = [
+    # WebRTC / LiveKit transport
+    "livekit>=0.17.0",
+    "livekit-api>=0.7.0",
+    "aiortc>=1.9.0",
+
+    # Async runtime
+    "anyio>=4.0.0",
+    "aiohttp>=3.9.0",
+
+    # API / web framework
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+
+    # Data handling
+    "pydantic>=2.7.0",
+    "numpy>=1.26.0",
+    "pillow>=10.3.0",
+
+    # MCP support
+    "mcp>=1.0.0",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+# Vision / YOLO lenses
+vision = [
+    "ultralytics>=8.2.0",
+    "opencv-python-headless>=4.9.0",
+    "torch>=2.3.0",
+    "torchvision>=0.18.0",
+]
+
+# LLM plugins (install the ones you need)
+anthropic = ["anthropic>=0.27.0"]
+openai = ["openai>=1.30.0"]
+gemini = ["google-generativeai>=0.7.0"]
+mistral = ["mistralai>=1.0.0"]
+openrouter = ["openai>=1.30.0"]  # OpenRouter uses OpenAI-compatible API
+xai = ["openai>=1.30.0"]
+
+# STT plugins
+deepgram = ["deepgram-sdk>=3.5.0"]
+assemblyai = ["assemblyai>=0.26.0"]
+fast-whisper = ["faster-whisper>=1.0.0"]
+
+# TTS plugins
+elevenlabs = ["elevenlabs>=1.5.0"]
+cartesia = ["cartesia>=1.0.0"]
+kokoro = ["kokoro-onnx>=0.3.0"]
+
+# Observability
+observability = [
+    "prometheus-client>=0.20.0",
+    "opentelemetry-sdk>=1.24.0",
+    "opentelemetry-exporter-otlp>=1.24.0",
+]
+
+# Session persistence
+redis = ["redis>=5.0.0", "hiredis>=2.3.0"]
+
+# All optional dependencies for development / testing
+all = [
+    "sense-mind[vision,anthropic,openai,deepgram,elevenlabs,observability,redis]",
+]
+
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["sense_mind"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
