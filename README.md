@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # Sense Platform
 
@@ -324,4 +324,3 @@ All eight phases complete.
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE)
-]]>
