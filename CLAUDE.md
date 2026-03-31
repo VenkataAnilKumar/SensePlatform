@@ -59,9 +59,9 @@ It is a **direct competitor to GetStream** — we recreate all of Stream's infra
 |---------|--------------|-------------|------|--------|
 | **Sense Relay** | Replaces Stream Video (WebRTC cloud) | Self-hosted WebRTC SFU (LiveKit engine) | 7880 | ✅ Phase 1 |
 | **Sense Mind** | Replaces Vision-Agents + Stream transport | AI agent engine, LLM + STT + TTS + Lenses | 8080 | ✅ Phase 1 |
-| **Sense Gate** | Replaces Stream API gateway | REST API, JWT auth, multi-tenancy | 3000 | 🔲 Phase 2 |
-| **Sense Wire** | Replaces Stream Chat | Real-time WebSocket messaging | 3001 | 🔲 Phase 3 |
-| **Sense Console** | Replaces Stream Dashboard | Developer dashboard UI | 4000 | 🔲 Phase 5 |
+| **Sense Gate** | Replaces Stream API gateway | REST API, JWT auth, multi-tenancy | 3000 | ✅ Phase 2 |
+| **Sense Wire** | Replaces Stream Chat | Real-time WebSocket messaging | 3001 | ✅ Phase 3 |
+| **Sense Console** | Replaces Stream Dashboard | Developer dashboard UI | 4000 | ✅ Phase 5 |
 
 ---
 
@@ -171,11 +171,11 @@ These names are final. Never rename them to match source repos.
 | Phase | What | Status |
 |-------|------|--------|
 | 1 | Sense Relay + Sense Mind + Lenses + docker-compose | ✅ Done (2026-03-30) |
-| 2 | Sense Gate — FastAPI, JWT auth, tenant management, REST API | 🔲 Next |
-| 3 | Sense Wire — WebSocket chat, Postgres persistence, Redis pub/sub | 🔲 |
-| 4 | sense-js SDK — `@sense/core`, `@sense/vision`, `@sense/chat`, `@sense/lens` | 🔲 |
-| 5 | Sense Console — developer dashboard (shadcn/ui + Next.js) | 🔲 |
-| 6 | Vision pipeline hardening — Processor Config API, Vision Event Stream | 🔲 |
+| 2 | Sense Gate — FastAPI, JWT auth, tenant management, REST API | ✅ Done (2026-03-30) |
+| 3 | Sense Wire — WebSocket chat, Postgres persistence, Redis pub/sub | ✅ Done (2026-03-30) |
+| 4 | sense-js SDK — `@sense/core`, `@sense/vision`, `@sense/chat`, `@sense/lens` | ✅ Done (2026-03-30) |
+| 5 | Sense Console — developer dashboard (shadcn/ui + Next.js) | ✅ Done (2026-03-30) |
+| 6 | Vision pipeline hardening — Processor Config API, Vision Event Stream | 🔲 Next |
 | 7 | sense-py SDK + full developer documentation | 🔲 |
 | 8 | 5 product examples — contact-center, sales-coach, fitness-coach, telehealth, security-soc | 🔲 |
 

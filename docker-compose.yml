@@ -152,16 +152,20 @@ services:
       SENSE_RELAY_URL: "ws://sense-relay:7880"
       SENSE_RELAY_API_KEY: "sense_gateway"
       SENSE_RELAY_SECRET: "secret_change_in_production"
-      SENSE_ROOM: "default"
+      SENSE_ROOM: ""                              # leave blank for pool-only mode
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       DEEPGRAM_API_KEY: "${DEEPGRAM_API_KEY:-}"
       ELEVENLABS_API_KEY: "${ELEVENLABS_API_KEY:-}"
       SENSE_MIND_PORT: "8080"
+      SENSE_WIRE_URL: "http://sense-wire:3001"    # Vision Event Bridge
+      SENSE_WIRE_API_KEY: "${SENSE_WIRE_API_KEY:-}"
     ports:
       - "8080:8080"
     depends_on:
       sense-relay:
+        condition: service_healthy
+      sense-wire:
         condition: service_healthy
     volumes:
       - ./examples:/app/examples:ro

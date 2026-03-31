@@ -21,6 +21,8 @@ Quick Start:
 
 from sense_mind.mind import SenseMind
 from sense_mind.runner import SenseRunner
+from sense_mind.pool import AgentPool, AgentConfig
+from sense_mind.bridge import LensEventBridge
 
-__version__ = "0.1.0"
-__all__ = ["SenseMind", "SenseRunner"]
+__version__ = "0.2.0"
+__all__ = ["SenseMind", "SenseRunner", "AgentPool", "AgentConfig", "LensEventBridge"]

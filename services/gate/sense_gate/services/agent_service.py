@@ -81,8 +81,9 @@ class AgentService:
 
     async def get_agent_status(self, tenant_slug: str, room_id: str) -> dict[str, Any]:
         """Get the status of an agent in a room."""
+        room_name = build_room_name(tenant_slug, room_id)
         try:
-            resp = await self._client.get("/status")
+            resp = await self._client.get(f"/agents/status?room={room_name}")
             resp.raise_for_status()
             return resp.json()
         except httpx.HTTPError:
