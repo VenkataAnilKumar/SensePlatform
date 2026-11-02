@@ -18,7 +18,7 @@ WORKDIR /app
 # ─────────────────────────────────────────────────────────────────────────────
 # Install Python dependencies
 # ─────────────────────────────────────────────────────────────────────────────
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
 COPY sense_mind/ ./sense_mind/
 
 # CPU-only PyTorch keeps the image small; the lenses (YOLO) need it.
