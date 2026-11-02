@@ -91,6 +91,14 @@ curl -s -X POST http://localhost:3000/agents/start \
   -d '{"room_id": "demo", "lenses": ["MoodLens"], "instructions": "You are a helpful assistant."}'
 ```
 
+<div align="center">
+
+<img src="docs/assets/dev-flow.gif" alt="Terminal: create a tenant, start an agent, join a room and watch live vision events" width="90%"/>
+
+<sub>Steps 3–4 and a live event stream, recorded from a real run (typing is animated; secrets are shortened).</sub>
+
+</div>
+
 > **Going to production?** Set `SENSE_ENV=production`. The services then refuse to start with default secrets, and `POST /tenants` requires an `X-Admin-Key` header. See the [self-hosting guide](docs/self-hosting.md) for TLS, ports, backups and a checklist.
 
 ---
@@ -106,9 +114,9 @@ Open **Live Demo** in the Console (`/demo`). Pick a room and the lenses to run, 
 
 <div align="center">
 
-<img src="docs/assets/live-demo.png" alt="Sense Console Live Demo: camera panel, live vision events and room chat" width="90%"/>
+<img src="docs/assets/live-demo.gif" alt="Sense Console Live Demo: an AI agent joins the room and vision events stream in next to the chat" width="90%"/>
 
-<sub>The Live Demo page. Events above came from a still test photo fed in as the camera; the camera preview is blacked out in this screenshot.</sub>
+<sub>The Live Demo page. The events come from a still test photo fed in as the camera; the camera preview is blacked out in this recording.</sub>
 
 </div>
 
@@ -291,6 +299,8 @@ Five example agents in [`examples/`](examples/):
 ```bash
 ANTHROPIC_API_KEY=sk-ant-... SENSE_ROOM=support python examples/contact-center/agent.py
 ```
+
+No browser? [`examples/watch-lens-events`](examples/watch-lens-events/watch_lens_events.py) publishes a still image or video as the camera and prints the lens events your agent produces.
 
 ---
 
