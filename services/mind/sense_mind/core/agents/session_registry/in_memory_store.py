@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 
-from vision_agents.core.utils.utils import cancel_and_wait
+from sense_mind.core.utils.utils import cancel_and_wait
 
 from .store import SessionKVStore
 

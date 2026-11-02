@@ -7,7 +7,7 @@ import time
 from typing import Any, AsyncIterator, Optional
 
 import websockets
-from getstream.video.rtc import PcmData
+from sense_mind.core.utils.pcm import PcmData
 
 logger = logging.getLogger(__name__)
 

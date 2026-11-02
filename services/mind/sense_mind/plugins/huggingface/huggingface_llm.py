@@ -3,16 +3,16 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.edge.types import Participant
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.inference._providers import PROVIDER_OR_POLICY_T
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 
 from . import events
 
@@ -37,7 +37,7 @@ class HuggingFaceLLM(LLM):
 
     Examples:
 
-        from vision_agents.plugins import huggingface
+        from sense_mind.plugins import huggingface
         llm = huggingface.LLM(model="meta-llama/Meta-Llama-3-8B-Instruct")
 
     """

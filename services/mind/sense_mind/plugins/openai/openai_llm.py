@@ -2,7 +2,7 @@ import json
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.edge.types import Participant
 from openai import AsyncOpenAI
 from openai.lib.streaming.responses import ResponseStreamEvent
 from openai.types.responses import (
@@ -13,13 +13,13 @@ from openai.types.responses import (
     ResponseFunctionToolCall,
     ResponseTextDeltaEvent,
 )
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 
 from . import events
 from .tool_utils import (
@@ -29,7 +29,7 @@ from .tool_utils import (
 )
 
 if TYPE_CHECKING:
-    from vision_agents.core.agents.conversation import Message
+    from sense_mind.core.agents.conversation import Message
 
 
 class OpenAILLM(LLM):
@@ -48,7 +48,7 @@ class OpenAILLM(LLM):
 
     Examples:
 
-        from vision_agents.plugins import openai
+        from sense_mind.plugins import openai
         llm = openai.LLM(model="gpt-5")
 
     """
@@ -357,7 +357,7 @@ class OpenAILLM(LLM):
         """
         Takes the openAI list of messages and standardizes it so we can store it in chat
         """
-        from vision_agents.core.agents.conversation import Message
+        from sense_mind.core.agents.conversation import Message
 
         # standardize on input
         if isinstance(openai_input, str):

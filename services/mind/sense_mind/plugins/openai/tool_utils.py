@@ -3,7 +3,7 @@
 import json
 from typing import Any, Dict, List
 
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 
 
 def convert_tools_to_openai_format(

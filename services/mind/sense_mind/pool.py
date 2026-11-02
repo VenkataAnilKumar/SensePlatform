@@ -7,7 +7,7 @@ Used by SenseRunner to support the multi-agent REST API:
     POST /agents/stop
     GET  /agents/status
     GET  /agents/{room}/lenses
-    POST /agents/{room}/lenses/configure
+    POST /agents/{room}/lenses/{lens}/configure
 """
 
 import asyncio
@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
+
+JOIN_TIMEOUT_SECONDS = 20.0
 
 
 # ── Lens registry ─────────────────────────────────────────────────────────────
@@ -58,6 +60,9 @@ class AgentConfig:
     llm: str = "claude-sonnet-4-6"
     agent_id: str = "sense-agent"
     agent_name: str = "Sense AI"
+    # Routing metadata for the Vision Event Stream (set by Sense Gate)
+    tenant_id: Optional[str] = None
+    room_id: Optional[str] = None
 
 
 @dataclass
@@ -105,13 +110,28 @@ class AgentPool:
         agent = _build_agent(config)
 
         # Wire lens event forwarding
-        for lens in getattr(agent, "_processors", []):
+        for lens in _lenses_of(agent):
             _attach_lens_callback(lens, config.room, self._event_listeners)
 
+        ready: asyncio.Future = asyncio.get_running_loop().create_future()
         task = asyncio.create_task(
-            _run_agent_in_room(agent, config.room),
+            _run_agent_in_room(agent, config.room, ready),
             name=f"sense-agent-{config.room}",
         )
+
+        # Wait for the Relay join so callers learn about failures immediately
+        try:
+            await asyncio.wait_for(asyncio.shield(ready), timeout=JOIN_TIMEOUT_SECONDS)
+        except Exception as exc:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+            try:
+                await agent.close()
+            except Exception:
+                pass
+            logger.error("AgentPool.start failed: room=%s error=%r", config.room, exc)
+            return {"status": "failed", "room": config.room, "error": str(exc) or type(exc).__name__}
+
         self._agents[config.room] = AgentEntry(config=config, agent=agent, task=task)
 
         logger.info(
@@ -130,7 +150,7 @@ class AgentPool:
         await asyncio.gather(entry.task, return_exceptions=True)
 
         try:
-            await entry.agent.edge.close()
+            await entry.agent.close()
         except Exception:
             pass
 
@@ -141,6 +161,13 @@ class AgentPool:
         """Stop every running agent. Called on shutdown."""
         for room in list(self._agents.keys()):
             await self.stop(room)
+
+    def routing(self, room: str) -> tuple[Optional[str], Optional[str]]:
+        """Return ``(tenant_id, user_facing_room_id)`` for a running room."""
+        entry = self._agents.get(room)
+        if entry is None:
+            return None, None
+        return entry.config.tenant_id, entry.config.room_id
 
     # ── Status ────────────────────────────────────────────────────────────────
 
@@ -164,18 +191,20 @@ class AgentPool:
 
     # ── Lens config ───────────────────────────────────────────────────────────
 
-    def get_lenses(self, room: str) -> list[dict]:
-        """List lenses attached to the agent running in *room*."""
+    def get_lenses(self, room: str) -> Optional[list[dict]]:
+        """List lenses attached to the agent in *room*, or ``None`` if no agent runs there."""
         entry = self._agents.get(room)
         if entry is None:
-            return []
+            return None
         return [
             {
                 "name": getattr(l, "name", type(l).__name__),
+                "class": type(l).__name__,
                 "throttle_seconds": getattr(l, "throttle_seconds", None),
                 "available": getattr(l, "_available", False),
+                "enabled": getattr(l, "enabled", True),
             }
-            for l in getattr(entry.agent, "_processors", [])
+            for l in _lenses_of(entry.agent)
         ]
 
     def configure_lens(
@@ -190,7 +219,8 @@ class AgentPool:
 
         Args:
             room:             Room the agent is running in.
-            lens_name:        Name of the lens (e.g. "mood_lens").
+            lens_name:        Lens identifier — either its class name ("MoodLens")
+                              or its snake_case name ("mood_lens").
             throttle_seconds: New throttle interval in seconds.
             enabled:          Enable or disable the lens.
         """
@@ -198,25 +228,30 @@ class AgentPool:
         if entry is None:
             return {"status": "not_found", "room": room}
 
-        for lens in getattr(entry.agent, "_processors", []):
-            name = getattr(lens, "name", type(lens).__name__)
-            if name == lens_name:
+        for lens in _lenses_of(entry.agent):
+            if lens_name in (getattr(lens, "name", None), type(lens).__name__):
                 if throttle_seconds is not None:
                     lens.throttle_seconds = throttle_seconds
                 if enabled is not None:
-                    lens._available = enabled
+                    lens.enabled = enabled
                 return {
                     "status": "updated",
                     "room": room,
                     "lens": lens_name,
                     "throttle_seconds": lens.throttle_seconds,
                     "available": lens._available,
+                    "enabled": lens.enabled,
                 }
 
         return {"status": "lens_not_found", "lens": lens_name, "room": room}
 
 
 # ── Private helpers ───────────────────────────────────────────────────────────
+
+def _lenses_of(agent) -> list:
+    """Return the BaseLens processors attached to *agent*."""
+    return list(getattr(agent, "lenses", []))
+
 
 def _build_agent(config: AgentConfig):
     """Instantiate a SenseMind from an AgentConfig."""
@@ -292,27 +327,34 @@ def _attach_lens_callback(lens, room: str, listeners: list):
     lens.on_event(_handle)
 
 
-async def _run_agent_in_room(agent, room: str):
+async def _run_agent_in_room(agent, room: str, ready: "asyncio.Future"):
     """
     Connect an agent to a room and wait until cancelled.
-    Handles graceful cleanup on CancelledError.
+
+    ``ready`` is resolved once the agent has joined (or failed to join).
     """
     try:
         logger.info("Agent connecting to room: %s", room)
-        await agent.edge.authenticate(agent._agent_user)
+        await agent.authenticate()
         call = await agent.edge.create_call(room)
-        await agent.edge.join(agent, call)
-        logger.info("Agent joined room: %s — waiting for participants", room)
-        await asyncio.sleep(float("inf"))
+        # participant_wait_timeout=0: don't block on the first participant;
+        # the agent starts consuming audio/video as soon as people arrive.
+        async with agent.join(call, participant_wait_timeout=0):
+            if not ready.done():
+                ready.set_result(True)
+            logger.info("Agent joined room: %s — waiting for participants", room)
+            await agent.finish()
     except asyncio.CancelledError:
         logger.info("Agent task cancelled for room: %s", room)
     except Exception as e:
         logger.error("Agent crashed in room '%s': %s", room, e, exc_info=True)
+        if not ready.done():
+            ready.set_exception(e)
 
 
 def _format_entry(room: str, entry: AgentEntry) -> dict:
     """Format an AgentEntry for the status API response."""
-    lenses = getattr(entry.agent, "_processors", [])
+    lenses = _lenses_of(entry.agent)
     return {
         "room": room,
         "status": "running" if not entry.task.done() else "stopped",

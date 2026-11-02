@@ -34,13 +34,21 @@ class TenantResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TenantCreatedResponse(TenantResponse):
+    api_key: str  # raw default key — shown only once
+
+
 class ApiKeyResponse(BaseModel):
     id: uuid.UUID
-    key: str
+    key_prefix: str
     name: str
     is_test: bool
 
     model_config = {"from_attributes": True}
+
+
+class ApiKeyCreatedResponse(ApiKeyResponse):
+    key: str  # raw key — shown only once
 
 
 class CreateApiKeyRequest(BaseModel):
@@ -50,7 +58,7 @@ class CreateApiKeyRequest(BaseModel):
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
-@router.post("", response_model=TenantResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=TenantCreatedResponse, status_code=status.HTTP_201_CREATED)
 async def create_tenant(body: CreateTenantRequest, db: DBDep):
     """
     Create a new tenant (developer account / product deployment).
@@ -73,10 +81,13 @@ async def create_tenant(body: CreateTenantRequest, db: DBDep):
     await db.flush()  # get tenant.id before creating API key
 
     # Auto-generate a default API key
-    default_key = ApiKey.generate(tenant.id, name="Default Key")
+    default_key, raw_key = ApiKey.generate(tenant.id, name="Default Key")
     db.add(default_key)
 
-    return tenant
+    return TenantCreatedResponse(
+        id=tenant.id, name=tenant.name, slug=tenant.slug, email=tenant.email,
+        is_active=tenant.is_active, api_key=raw_key,
+    )
 
 
 @router.get("/me", response_model=TenantResponse)
@@ -99,16 +110,19 @@ async def get_tenant(tenant_id: uuid.UUID, db: DBDep):
     return tenant
 
 
-@router.post("/me/api-keys", response_model=ApiKeyResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/me/api-keys", response_model=ApiKeyCreatedResponse, status_code=status.HTTP_201_CREATED)
 async def create_api_key(body: CreateApiKeyRequest, tenant: TenantDep, db: DBDep):
     """
     Create a new API key for the authenticated tenant.
 
     **Auth**: Requires a valid API key (X-API-Key header).
     """
-    key = ApiKey.generate(tenant.id, name=body.name, test=body.test)
-    db.add(key)
-    return key
+    row, raw_key = ApiKey.generate(tenant.id, name=body.name, test=body.test)
+    db.add(row)
+    await db.flush()
+    return ApiKeyCreatedResponse(
+        id=row.id, key_prefix=row.key_prefix, name=row.name, is_test=row.is_test, key=raw_key
+    )
 
 
 @router.get("/me/api-keys", response_model=list[ApiKeyResponse])

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from getstream.video.rtc.track_util import PcmData
-from vision_agents.core.events import PluginBaseEvent
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.events import PluginBaseEvent
 
 from .types import TrackType
 

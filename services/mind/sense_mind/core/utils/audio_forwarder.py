@@ -3,8 +3,8 @@ import logging
 from typing import Optional, Callable, Any, cast
 
 import av
-from getstream.video.rtc.audio_track import AudioStreamTrack
-from getstream.video.rtc.track_util import PcmData
+from sense_mind.core.utils.pcm import AudioStreamTrack
+from sense_mind.core.utils.pcm import PcmData
 
 logger = logging.getLogger(__name__)
 

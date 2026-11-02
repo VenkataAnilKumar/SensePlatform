@@ -8,8 +8,8 @@ from typing import (
     Optional,
 )
 
-from getstream.video.rtc.track_util import PcmData
-from vision_agents.core.edge.types import Participant
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.edge.types import Participant
 
 from . import OmniLLM, events
 

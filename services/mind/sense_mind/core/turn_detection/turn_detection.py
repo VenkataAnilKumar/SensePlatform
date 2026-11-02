@@ -2,8 +2,8 @@ from typing import Optional
 from abc import ABC, abstractmethod
 from enum import Enum
 import uuid
-from getstream.video.rtc.track_util import PcmData
-from vision_agents.core.events.manager import EventManager
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.events.manager import EventManager
 from . import events
 from .events import TurnStartedEvent, TurnEndedEvent
 from ..agents.conversation import Conversation

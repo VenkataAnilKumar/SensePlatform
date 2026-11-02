@@ -69,7 +69,7 @@ services:
     volumes:
       - ./services/relay/sense-relay.yaml:/etc/sense-relay/sense-relay.yaml:ro
     environment:
-      - LIVEKIT_KEYS=sense_gateway:secret_change_in_production
+      - LIVEKIT_KEYS=sense_gateway:${SENSE_RELAY_SECRET:-secret_change_in_production}
     depends_on:
       redis:
         condition: service_healthy
@@ -92,7 +92,7 @@ services:
       REDIS_URL: "redis://redis:6379/0"
       RELAY_URL: "ws://sense-relay:7880"
       RELAY_API_KEY: "sense_gateway"
-      RELAY_API_SECRET: "secret_change_in_production"
+      RELAY_API_SECRET: "${SENSE_RELAY_SECRET:-secret_change_in_production}"
       MIND_URL: "http://sense-mind:8080"
       JWT_SECRET: "${SENSE_JWT_SECRET:-sense_jwt_secret_change_in_production}"
       DEBUG: "${DEBUG:-false}"
@@ -125,6 +125,7 @@ services:
       REDIS_URL: "redis://redis:6379/1"
       JWT_SECRET: "${SENSE_JWT_SECRET:-sense_jwt_secret_change_in_production}"
       JWT_ALGORITHM: "HS256"
+      SERVICE_KEY: "${SENSE_SERVICE_KEY:-sense_service_key_change_in_production}"
       DEBUG: "${DEBUG:-false}"
     ports:
       - "3001:3001"
@@ -151,7 +152,7 @@ services:
     environment:
       SENSE_RELAY_URL: "ws://sense-relay:7880"
       SENSE_RELAY_API_KEY: "sense_gateway"
-      SENSE_RELAY_SECRET: "secret_change_in_production"
+      SENSE_RELAY_SECRET: "${SENSE_RELAY_SECRET:-secret_change_in_production}"
       SENSE_ROOM: ""                              # leave blank for pool-only mode
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
@@ -159,7 +160,7 @@ services:
       ELEVENLABS_API_KEY: "${ELEVENLABS_API_KEY:-}"
       SENSE_MIND_PORT: "8080"
       SENSE_WIRE_URL: "http://sense-wire:3001"    # Vision Event Bridge
-      SENSE_WIRE_API_KEY: "${SENSE_WIRE_API_KEY:-}"
+      SENSE_WIRE_API_KEY: "${SENSE_SERVICE_KEY:-sense_service_key_change_in_production}"
     ports:
       - "8080:8080"
     depends_on:

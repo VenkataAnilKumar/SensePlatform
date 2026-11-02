@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 
 import aiortc
 from dotenv import load_dotenv
-from getstream.video.rtc.track_util import PcmData
+from sense_mind.core.utils.pcm import PcmData
 from openai import AsyncOpenAI
 from openai.types.realtime import (
     AudioTranscriptionParam,
@@ -25,10 +25,10 @@ from openai.types.realtime import (
 from openai.types.realtime.realtime_transcription_session_audio_input_turn_detection_param import (
     SemanticVad,
 )
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.instructions import Instructions
-from vision_agents.core.llm import realtime
-from vision_agents.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.instructions import Instructions
+from sense_mind.core.llm import realtime
+from sense_mind.core.utils.video_forwarder import VideoForwarder
 
 from .rtc_manager import RTCManager
 from .tool_utils import convert_tools_to_openai_format, parse_tool_arguments

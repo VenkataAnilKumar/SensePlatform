@@ -10,19 +10,19 @@ import aiortc
 import av
 from PIL import Image
 
-from vision_agents.core import llm
-from vision_agents.core.stt.events import STTTranscriptEvent
-from vision_agents.core.llm.events import (
+from sense_mind.core import llm
+from sense_mind.core.stt.events import STTTranscriptEvent
+from sense_mind.core.llm.events import (
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
     VLMInferenceStartEvent,
     VLMInferenceCompletedEvent,
     VLMErrorEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_queue import VideoLatestNQueue
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.llm.llm import LLMResponseEvent
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_queue import VideoLatestNQueue
+from sense_mind.core.edge.types import Participant
 import moondream as md
 
 logger = logging.getLogger(__name__)

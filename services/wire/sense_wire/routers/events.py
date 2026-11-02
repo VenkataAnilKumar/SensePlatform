@@ -4,10 +4,13 @@ POST /channels/:type/:id/event — emit a custom event to channel subscribers.
 Used by Sense Mind to push Lens events (mood, pose, guard, face) to the UI.
 """
 
-from fastapi import APIRouter, HTTPException
+import hmac
+
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 
+from sense_wire.config import get_settings
 from sense_wire.deps import DBDep, UserDep
 from sense_wire.models.channel import Channel
 from sense_wire.pubsub.redis_pubsub import get_pubsub
@@ -77,3 +80,48 @@ async def emit_event(
         "event_type": body.event_type,
         "delivered_local": delivered,
     }
+
+
+# ── Trusted internal endpoint (service-to-service) ────────────────────────────
+
+internal_router = APIRouter(prefix="/internal", tags=["Internal"])
+
+
+class InternalEventRequest(BaseModel):
+    tenant_id: str
+    channel_type: str = "lens"
+    channel_id: str
+    event_type: str = "lens.event"
+    data: dict = {}
+
+
+@internal_router.post("/events")
+async def internal_emit_event(
+    body: InternalEventRequest,
+    x_service_key: str | None = Header(default=None, alias="X-Service-Key"),
+):
+    """
+    Push an event to a channel on behalf of a trusted service (Sense Mind).
+
+    Unlike the public endpoint this needs no end-user JWT and does not require
+    the channel to exist in the database — vision events are ephemeral.
+
+    **Auth**: `X-Service-Key` header matching Wire's `SERVICE_KEY` setting.
+    """
+    expected = get_settings().service_key
+    if not expected:
+        raise HTTPException(status_code=503, detail="Internal events are disabled (SERVICE_KEY unset)")
+    if not x_service_key or not hmac.compare_digest(x_service_key, expected):
+        raise HTTPException(status_code=401, detail="Invalid service key")
+
+    payload = make_event(
+        body.event_type,
+        channel_id=body.channel_id,
+        channel_type=body.channel_type,
+        data=body.data,
+    )
+    delivered = await get_manager().broadcast_to_channel(
+        body.tenant_id, body.channel_type, body.channel_id, payload
+    )
+    await get_pubsub().publish(body.tenant_id, body.channel_type, body.channel_id, payload)
+    return {"status": "emitted", "delivered_local": delivered}

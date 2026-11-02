@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     relay_api_key: str = "sense_gateway"
     relay_api_secret: str = "secret_change_in_production"
 
+    # ── CORS ──────────────────────────────────────────────────────────────────
+    # Comma-separated list of allowed origins, e.g. "https://app.example.com".
+    cors_origins: str = "*"
+
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     rate_limit_requests: int = 100       # requests per window
     rate_limit_window_seconds: int = 60  # window size

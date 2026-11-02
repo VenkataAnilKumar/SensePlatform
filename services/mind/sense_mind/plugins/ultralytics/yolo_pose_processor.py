@@ -11,9 +11,9 @@ import cv2
 import numpy as np
 from numpy import ndarray
 from PIL import Image
-from vision_agents.core.processors.base_processor import VideoProcessorPublisher
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_track import QueuedVideoTrack
+from sense_mind.core.processors.base_processor import VideoProcessorPublisher
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_track import QueuedVideoTrack
 
 logger = logging.getLogger(__name__)
 

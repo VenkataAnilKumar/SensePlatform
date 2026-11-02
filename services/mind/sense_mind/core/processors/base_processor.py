@@ -4,11 +4,11 @@ import typing
 from typing import Optional
 
 import aiortc
-from getstream.video.rtc import PcmData
-from vision_agents.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.utils.video_forwarder import VideoForwarder
 
 if typing.TYPE_CHECKING:
-    from vision_agents.core import Agent
+    from sense_mind.core import Agent
 
 logger = logging.getLogger(__name__)
 

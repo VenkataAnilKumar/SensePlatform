@@ -19,7 +19,7 @@ HTTP Control API (port 8080 by default):
     POST /agents/start                   — launch agent in a room
     POST /agents/stop                    — stop agent in a room
     GET  /agents/{room}/lenses           — list lenses for a room
-    POST /agents/{room}/lenses/configure — update lens settings at runtime
+    POST /agents/{room}/lenses/{lens}/configure — update lens settings at runtime
     POST /shutdown                       — graceful shutdown
 
 Usage (pool mode):
@@ -125,11 +125,15 @@ class SenseRunner:
         try:
             logger.info("Auto-starting legacy agent in room: %s", self._default_room)
             agent = self._legacy_agent
-            await agent.edge.authenticate(agent._agent_user)
+            await agent.authenticate()
             call = await agent.edge.create_call(self._default_room)
-            await agent.edge.join(agent, call)
-            logger.info("Legacy agent joined room: %s", self._default_room)
-            await self._shutdown_event.wait()
+            async with agent.join(call, participant_wait_timeout=0):
+                logger.info("Legacy agent joined room: %s", self._default_room)
+                finished = asyncio.ensure_future(agent.finish())
+                stopped = asyncio.ensure_future(self._shutdown_event.wait())
+                await asyncio.wait({finished, stopped}, return_when=asyncio.FIRST_COMPLETED)
+                for t in (finished, stopped):
+                    t.cancel()
         except Exception as e:
             logger.error("Legacy agent error: %s", e, exc_info=True)
             self._shutdown_event.set()
@@ -140,7 +144,7 @@ class SenseRunner:
         await self._bridge.close()
         if self._legacy_agent:
             try:
-                await self._legacy_agent.edge.close()
+                await self._legacy_agent.close()
             except Exception:
                 pass
         logger.info("SenseRunner stopped.")
@@ -164,6 +168,8 @@ class SenseRunner:
                 llm: str = "claude-sonnet-4-6"
                 agent_id: str = "sense-agent"
                 agent_name: str = "Sense AI"
+                tenant_id: str | None = None   # routing for the Vision Event Stream
+                room_id: str | None = None
 
             class StopRequest(BaseModel):
                 room: str
@@ -203,11 +209,13 @@ class SenseRunner:
                     llm=req.llm,
                     agent_id=req.agent_id,
                     agent_name=req.agent_name,
+                    tenant_id=req.tenant_id,
+                    room_id=req.room_id,
                 )
                 result = await self._pool.start(config)
-                if result.get("status") == "already_running":
-                    return result  # 200 with idempotent response
-                return result
+                if result.get("status") == "failed":
+                    raise HTTPException(status_code=502, detail=result)
+                return result  # "started" or idempotent "already_running"
 
             @app.post("/agents/stop")
             async def agents_stop(req: StopRequest):

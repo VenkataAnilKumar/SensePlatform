@@ -10,20 +10,20 @@ from google.genai.types import (
     MediaResolution,
     ThinkingLevel,
 )
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.llm.events import (
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 
 from . import events
 from .tools import GeminiTool
 
 if TYPE_CHECKING:
-    from vision_agents.core.agents.conversation import Message
+    from sense_mind.core.agents.conversation import Message
 
 
 DEFAULT_MODEL = "gemini-3.1-pro-preview"
@@ -45,7 +45,7 @@ class GeminiLLM(LLM):
 
     Examples:
 
-          from vision_agents.plugins import gemini
+          from sense_mind.plugins import gemini
           llm = gemini.LLM()
     """
 
@@ -391,7 +391,7 @@ class GeminiLLM(LLM):
 
     @staticmethod
     def _normalize_message(gemini_input) -> List["Message"]:
-        from vision_agents.core.agents.conversation import Message
+        from sense_mind.core.agents.conversation import Message
 
         # standardize on input
         if isinstance(gemini_input, str):

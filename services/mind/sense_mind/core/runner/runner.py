@@ -10,9 +10,9 @@ import click
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from vision_agents.core import AgentLauncher
-from vision_agents.core.utils import get_vision_agents_version
-from vision_agents.core.utils.logging import (
+from sense_mind.core import AgentLauncher
+from sense_mind.core.utils import get_sense_mind_version
+from sense_mind.core.utils.logging import (
     configure_fastapi_loggers,
     configure_sdk_logger,
 )
@@ -44,7 +44,7 @@ def _print_splash() -> None:
     click.echo()  # newline before the splash
     click.echo(click.style(_SPLASH, fg=(0, 95, 215), bold=True))
     # Align the version to the right side of the splash
-    version = f"v{get_vision_agents_version()}".rjust(banner_width)
+    version = f"v{get_sense_mind_version()}".rjust(banner_width)
     click.echo(click.style(version, fg="white", dim=True))
     click.echo()
 
@@ -61,7 +61,7 @@ class Runner:
     Examples:
         ```python
         # agent.py
-        from vision_agents.core import Runner, ServeOptions
+        from sense_mind.core import Runner, ServeOptions
 
         launcher = AgentLauncher(...)
         runner = Runner(launcher=launcher, serve_options=ServeOptions())

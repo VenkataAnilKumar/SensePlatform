@@ -1,7 +1,7 @@
 import logging
 
-from vision_agents.core.agents import events
-from vision_agents.core.events import EventManager
+from sense_mind.core.agents import events
+from sense_mind.core.events import EventManager
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class Profiler:
 
     Example:
         agent = Agent(
-            edge=getstream.Edge(),
+            edge=RelayTransport(),
             agent_user=User(name="Agent", id="agent"),
             llm=gemini.LLM(),
             profiler=Profiler(output_path='./profile.html'),

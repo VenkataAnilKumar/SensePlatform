@@ -2,8 +2,8 @@ import abc
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 
 import aiortc
-from getstream.video.rtc import AudioStreamTrack
-from vision_agents.core.events.manager import EventManager
+from sense_mind.core.utils.pcm import AudioStreamTrack
+from sense_mind.core.events.manager import EventManager
 
 from .call import Call
 from .events import (
@@ -15,7 +15,7 @@ from .events import (
 from .types import Connection, User
 
 if TYPE_CHECKING:
-    from vision_agents.core import Agent
+    from sense_mind.core import Agent
 
 T_Call = TypeVar("T_Call", bound=Call)
 

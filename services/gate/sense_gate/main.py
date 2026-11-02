@@ -42,6 +42,13 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
     # ── Startup ───────────────────────────────────────────────────────────────
     logger.info("Sense Gate starting up...")
+    if not settings.debug:
+        for name, value in (
+            ("JWT_SECRET", settings.jwt_secret),
+            ("RELAY_API_SECRET", settings.relay_api_secret),
+        ):
+            if "change_in_production" in value:
+                logger.warning("%s is still the default value — change it before production!", name)
 
     # Auto-create tables (dev mode — use Alembic in production)
     if settings.debug:
@@ -90,16 +97,18 @@ def create_app() -> FastAPI:
     )
 
     # ── CORS ──────────────────────────────────────────────────────────────────
+    origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()] or ["*"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Tighten in production
-        allow_credentials=True,
+        allow_origins=origins,
+        # Browsers reject credentialed requests with a wildcard origin
+        allow_credentials="*" not in origins,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-    # ── Rate Limiting (attached after startup so redis is available) ──────────
-    app.add_middleware(RateLimitMiddleware, redis_client=None)
+    # ── Rate Limiting (resolves app.state.redis per request) ──────────────────
+    app.add_middleware(RateLimitMiddleware)
 
     # ── Routers ───────────────────────────────────────────────────────────────
     app.include_router(auth.router)

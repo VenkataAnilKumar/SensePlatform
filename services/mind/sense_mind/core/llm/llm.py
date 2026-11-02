@@ -16,17 +16,17 @@ from typing import (
 )
 
 import aiortc
-from vision_agents.core.instructions import Instructions
-from vision_agents.core.llm import events
-from vision_agents.core.llm.events import ToolEndEvent, ToolStartEvent
+from sense_mind.core.instructions import Instructions
+from sense_mind.core.llm import events
+from sense_mind.core.llm.events import ToolEndEvent, ToolStartEvent
 
 if TYPE_CHECKING:
-    from vision_agents.core.agents import Agent
-    from vision_agents.core.agents.conversation import Conversation
+    from sense_mind.core.agents import Agent
+    from sense_mind.core.agents.conversation import Conversation
 
-from getstream.video.rtc import PcmData
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.events.manager import EventManager
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.events.manager import EventManager
 
 from ..utils.video_forwarder import VideoForwarder
 from .function_registry import FunctionRegistry

@@ -7,14 +7,14 @@ enabling browser clients to subscribe to vision intelligence over WebSocket.
 When a lens fires (MoodLens detects emotion, GuardLens flags content, etc.),
 the bridge POSTs the event to:
 
-    POST {SENSE_WIRE_URL}/channels/lens/{room}/event
+    POST {SENSE_WIRE_URL}/internal/events   (header X-Service-Key)
 
 Sense Wire fans it out to every WebSocket client subscribed to that channel,
 so the @sense/lens SDK receives it immediately.
 
 Configuration (env vars):
     SENSE_WIRE_URL      — Sense Wire HTTP base URL (e.g. http://sense-wire:3001)
-    SENSE_WIRE_API_KEY  — API key to authenticate with Sense Wire/Gate
+    SENSE_WIRE_API_KEY  — shared service key; must equal Wire's SERVICE_KEY
 
 Usage:
     bridge = LensEventBridge()
@@ -24,6 +24,7 @@ Usage:
 import asyncio
 import logging
 import os
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,10 @@ class LensEventBridge:
         self._api_key = api_key or os.environ.get("SENSE_WIRE_API_KEY", "")
         self._enabled = bool(self._wire_url)
         self._client = None
+        self._pool = None
+        self._warned_routing: set[str] = set()
+        self._last_sent: dict[tuple[str, str], float] = {}
+        self.min_interval = 0.5  # seconds per (room, lens) — caps event floods
 
         if self._enabled:
             try:
@@ -66,6 +71,7 @@ class LensEventBridge:
         Register this bridge as a pool-level lens event listener.
         After calling this, every LensEvent from every pool agent is forwarded.
         """
+        self._pool = pool
         pool.on_lens_event(self._handle_event)
 
     async def forward(self, room: str, event) -> bool:
@@ -82,9 +88,31 @@ class LensEventBridge:
         if not self._enabled or self._client is None:
             return False
 
-        url = f"{self._wire_url}/channels/lens/{room}/event"
+        tenant_id, room_id = (None, None)
+        if self._pool is not None:
+            tenant_id, room_id = self._pool.routing(room)
+        if not tenant_id or not room_id:
+            if room not in self._warned_routing:
+                self._warned_routing.add(room)
+                logger.warning(
+                    "LensEventBridge: no tenant routing for room %s — start agents "
+                    "through Sense Gate (or pass tenant_id/room_id) to stream lens events",
+                    room,
+                )
+            return False
+
+        key = (room, event.lens_name)
+        now = time.monotonic()
+        if now - self._last_sent.get(key, 0.0) < self.min_interval:
+            return False
+        self._last_sent[key] = now
+
+        url = f"{self._wire_url}/internal/events"
         payload = {
-            "type": f"lens.{event.lens_name}",
+            "tenant_id": tenant_id,
+            "channel_type": "lens",
+            "channel_id": room_id,
+            "event_type": "lens.event",
             "data": {
                 "lens_name": event.lens_name,
                 "confidence": getattr(event, "confidence", 1.0),
@@ -96,7 +124,7 @@ class LensEventBridge:
 
         headers = {"Content-Type": "application/json"}
         if self._api_key:
-            headers["X-API-Key"] = self._api_key
+            headers["X-Service-Key"] = self._api_key
 
         try:
             resp = await self._client.post(url, json=payload, headers=headers)

@@ -2,14 +2,14 @@ import json
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
-from vision_agents.core.llm.events import (
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 from xai_sdk import AsyncClient
 from xai_sdk.chat import Chunk, Response, system, tool, tool_result, user
 from xai_sdk.proto import chat_pb2
@@ -17,7 +17,7 @@ from xai_sdk.proto import chat_pb2
 from . import events
 
 if TYPE_CHECKING:
-    from vision_agents.core.agents.conversation import Message
+    from sense_mind.core.agents.conversation import Message
     from xai_sdk.aio.chat import Chat
 
 
@@ -37,7 +37,7 @@ class XAILLM(LLM):
 
     Examples:
 
-        from vision_agents.plugins import xai
+        from sense_mind.plugins import xai
         llm = xai.LLM(model="grok-4-latest")
 
     """
@@ -223,7 +223,7 @@ class XAILLM(LLM):
         """
         Takes the input text and standardizes it so we can store it in chat
         """
-        from vision_agents.core.agents.conversation import Message
+        from sense_mind.core.agents.conversation import Message
 
         # Create a standardized message from input text
         message = Message(

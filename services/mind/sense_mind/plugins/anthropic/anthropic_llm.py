@@ -14,15 +14,15 @@ from anthropic.types import (
     RawMessageStreamEvent,
     TextDelta,
 )
-from vision_agents.core.agents.conversation import Message
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.llm.events import (
+from sense_mind.core.agents.conversation import Message
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 
 from . import events
 
@@ -45,7 +45,7 @@ class ClaudeLLM(LLM):
 
     Examples:
 
-        from vision_agents.plugins import anthropic
+        from sense_mind.plugins import anthropic
         llm = anthropic.LLM(model="claude-opus-4-1-20250805")
     """
 
@@ -559,7 +559,7 @@ class ClaudeLLM(LLM):
 
     @staticmethod
     def _normalize_message(claude_messages: Any) -> List["Message"]:
-        from vision_agents.core.agents.conversation import Message
+        from sense_mind.core.agents.conversation import Message
 
         if isinstance(claude_messages, str):
             claude_messages = [

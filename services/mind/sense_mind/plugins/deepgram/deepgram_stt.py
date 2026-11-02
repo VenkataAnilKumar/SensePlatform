@@ -8,11 +8,11 @@ from deepgram import AsyncDeepgramClient
 from deepgram.core import EventType
 from deepgram.listen import ListenV2CloseStream
 from deepgram.listen.v2.socket_client import AsyncV2SocketClient
-from getstream.video.rtc.track_util import PcmData
-from vision_agents.core import stt
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.stt import TranscriptResponse
-from vision_agents.core.utils.utils import cancel_and_wait
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core import stt
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.stt import TranscriptResponse
+from sense_mind.core.utils.utils import cancel_and_wait
 
 logger = logging.getLogger(__name__)
 

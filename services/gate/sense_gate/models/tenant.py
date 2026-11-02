@@ -3,6 +3,7 @@ Sense Gate — Tenant & API Key Models
 Each tenant is one product deployment (contact center, fitness app, etc.)
 """
 
+import hashlib
 import secrets
 import uuid
 from datetime import datetime, timezone
@@ -67,7 +68,9 @@ class ApiKey(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
     )
-    key: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    # Only a SHA-256 digest of the key is stored; the raw key is shown once at creation.
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    key_prefix: Mapped[str] = mapped_column(String(16), nullable=False)
     name: Mapped[str] = mapped_column(String(128), default="Default Key")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_test: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -80,14 +83,28 @@ class ApiKey(Base):
 
     tenant: Mapped["Tenant"] = relationship(back_populates="api_keys")
 
+    @staticmethod
+    def hash_key(raw_key: str) -> str:
+        return hashlib.sha256(raw_key.encode()).hexdigest()
+
     @classmethod
-    def generate(cls, tenant_id: uuid.UUID, name: str = "Default Key", test: bool = False) -> "ApiKey":
+    def generate(
+        cls, tenant_id: uuid.UUID, name: str = "Default Key", test: bool = False
+    ) -> tuple["ApiKey", str]:
+        """Create a new key row. Returns ``(row, raw_key)``; the raw key is not stored."""
         prefix = "sk_test_" if test else "sk_live_"
-        key = prefix + secrets.token_urlsafe(32)
-        return cls(tenant_id=tenant_id, key=key, name=name, is_test=test)
+        raw_key = prefix + secrets.token_urlsafe(32)
+        row = cls(
+            tenant_id=tenant_id,
+            key_hash=cls.hash_key(raw_key),
+            key_prefix=raw_key[:12],
+            name=name,
+            is_test=test,
+        )
+        return row, raw_key
 
     def __repr__(self) -> str:
-        return f"<ApiKey id={self.id} key={self.key[:12]}...>"
+        return f"<ApiKey id={self.id} key={self.key_prefix}...>"
 
 
 class Webhook(Base):

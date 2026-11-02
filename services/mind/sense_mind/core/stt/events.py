@@ -1,4 +1,4 @@
-from vision_agents.core.events import PluginBaseEvent, ConnectionState
+from sense_mind.core.events import PluginBaseEvent, ConnectionState
 from dataclasses import dataclass, field
 from typing import Optional, Any
 

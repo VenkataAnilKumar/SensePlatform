@@ -3,8 +3,8 @@ import os
 from typing import AsyncIterator, Iterator, Optional
 
 from elevenlabs.client import AsyncElevenLabs
-from vision_agents.core import tts
-from getstream.video.rtc.track_util import PcmData, AudioFormat
+from sense_mind.core import tts
+from sense_mind.core.utils.pcm import PcmData, AudioFormat
 
 logger = logging.getLogger(__name__)
 

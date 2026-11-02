@@ -141,10 +141,17 @@ class SenseClient:
     async def _delete(self, path: str) -> Any:
         resp = await self._http.delete(path)
         resp.raise_for_status()
-        return resp.json()
+        return resp.json() if resp.content else {}
 
 
 # ── Sub-resource APIs ─────────────────────────────────────────────────────────
+
+def _split_events(events: Any) -> list[str]:
+    """Gate stores webhook events as a comma-separated string ("*" = all)."""
+    if isinstance(events, list):
+        return events
+    return [e.strip() for e in str(events or "").split(",") if e.strip()]
+
 
 class _RoomsAPI:
     """Room management. Access via client.rooms.*"""
@@ -155,27 +162,17 @@ class _RoomsAPI:
     async def list(self) -> list[Room]:
         """List all rooms for the authenticated tenant."""
         data = await self._c._get("/rooms")
+        tenant_id = self._c.tenant.id if self._c._tenant else ""
         return [
             Room(
-                id=r["id"],
-                tenant_id=r["tenant_id"],
-                name=r["name"],
-                active_participants=r.get("active_participants", 0),
-                created_at=r.get("created_at", ""),
+                id=r["room_id"],
+                tenant_id=tenant_id,
+                name=r["room_name"],
+                active_participants=r.get("num_participants", 0),
+                created_at=str(r.get("creation_time", "")),
             )
-            for r in data.get("rooms", [])
+            for r in data
         ]
-
-    async def get(self, room_id: str) -> Room:
-        """Get a room by ID."""
-        data = await self._c._get(f"/rooms/{room_id}")
-        return Room(
-            id=data["id"],
-            tenant_id=data["tenant_id"],
-            name=data["name"],
-            active_participants=data.get("active_participants", 0),
-            created_at=data.get("created_at", ""),
-        )
 
     async def join(
         self,
@@ -210,10 +207,6 @@ class _RoomsAPI:
             relay_token=data["relay_token"],
             room_name=data.get("room_name", ""),
         )
-
-    async def delete(self, room_id: str) -> dict:
-        """Delete a room."""
-        return await self._c._delete(f"/rooms/{room_id}")
 
 
 class _AgentsAPI:
@@ -254,7 +247,7 @@ class _AgentsAPI:
 
     async def status(self, room_id: str) -> AgentStatus:
         """Get agent status for a room."""
-        data = await self._c._get(f"/agents/{room_id}/status")
+        data = await self._c._get("/agents/status", room_id=room_id)
         return AgentStatus(
             room=data.get("room", room_id),
             status=data.get("status", "unknown"),
@@ -265,7 +258,7 @@ class _AgentsAPI:
 
     async def get_lenses(self, room_id: str) -> list[LensInfo]:
         """List lenses attached to the agent in a room."""
-        data = await self._c._get(f"/agents/{room_id}/lenses")
+        data = await self._c._get("/agents/lenses", room_id=room_id)
         return [
             LensInfo(
                 name=l["name"],
@@ -283,10 +276,10 @@ class _AgentsAPI:
         enabled: bool | None = None,
     ) -> dict[str, Any]:
         """Update lens configuration for a running agent."""
-        return await self._c._post(f"/agents/{room_id}/lenses/{lens_name}/configure", json={
-            "throttle_seconds": throttle_seconds,
-            "enabled": enabled,
-        })
+        return await self._c._post(
+            f"/agents/lenses/{lens_name}/configure?room_id={room_id}",
+            json={"throttle_seconds": throttle_seconds, "enabled": enabled},
+        )
 
 
 class _ChannelsAPI:
@@ -370,13 +363,13 @@ class _WebhooksAPI:
         return [
             Webhook(
                 id=w["id"],
-                tenant_id=w["tenant_id"],
+                tenant_id=w.get("tenant_id", ""),
                 url=w["url"],
-                events=w.get("events", []),
+                events=_split_events(w.get("events", "*")),
                 is_active=w.get("is_active", True),
                 created_at=w.get("created_at", ""),
             )
-            for w in data.get("webhooks", [])
+            for w in data
         ]
 
     async def register(
@@ -385,16 +378,16 @@ class _WebhooksAPI:
         events: list[str] | None = None,
     ) -> Webhook:
         """Register a new webhook endpoint."""
-        data = await self._c._post("/webhooks/register", json={
+        w = await self._c._post("/webhooks", json={
             "url": url,
-            "events": events or [],
+            "events": ",".join(events) if events else "*",
         })
-        w = data.get("webhook", data)
         return Webhook(
             id=w["id"],
-            tenant_id=w["tenant_id"],
+            tenant_id=w.get("tenant_id", ""),
             url=w["url"],
-            events=w.get("events", []),
+            events=_split_events(w.get("events", "*")),
+            is_active=w.get("is_active", True),
         )
 
     async def delete(self, webhook_id: str) -> dict:
@@ -422,19 +415,20 @@ class _UsageAPI:
         """
         params: dict[str, Any] = {}
         if start_date:
-            params["start_date"] = start_date
+            params["from_date"] = start_date
         if end_date:
-            params["end_date"] = end_date
+            params["to_date"] = end_date
 
-        data = await self._c._get("/usage/summary", **params)
+        data = await self._c._get("/usage", **params)
+        by_type = {row["event_type"]: row["total_quantity"] for row in data.get("summary", [])}
         return UsageSummary(
             tenant_id=data.get("tenant_id", ""),
-            period_start=data.get("period_start", ""),
-            period_end=data.get("period_end", ""),
-            total_calls=int(data.get("total_calls", 0)),
-            total_minutes=float(data.get("total_minutes", 0)),
-            total_participants=int(data.get("total_participants", 0)),
-            by_type=data.get("by_type", {}),
+            period_start=data.get("from_date") or "",
+            period_end=data.get("to_date") or "",
+            total_calls=int(data.get("total_records", 0)),
+            total_minutes=float(by_type.get("room_minutes", 0)),
+            total_participants=int(by_type.get("participants", 0)),
+            by_type=by_type,
         )
 
 
@@ -445,32 +439,31 @@ class _ApiKeysAPI:
         self._c = client
 
     async def list(self) -> list[ApiKey]:
-        """List all API keys for the tenant."""
-        data = await self._c._get("/tenants/keys")
+        """List active API keys. Only the key prefix is returned (``key`` is a masked prefix)."""
+        data = await self._c._get("/tenants/me/api-keys")
+        tenant_id = self._c.tenant.id if self._c._tenant else ""
         return [
             ApiKey(
                 id=k["id"],
-                tenant_id=k["tenant_id"],
+                tenant_id=tenant_id,
                 name=k["name"],
-                key=k.get("key", "sk_live_***"),
+                key=k["key_prefix"] + "…",
                 is_test=k.get("is_test", False),
-                created_at=k.get("created_at", ""),
             )
-            for k in data.get("keys", [])
+            for k in data
         ]
 
     async def create(self, name: str = "Default Key", test: bool = False) -> ApiKey:
         """Create a new API key. The full key is only shown once."""
-        data = await self._c._post("/tenants/keys", json={"name": name, "test": test})
-        k = data.get("api_key", data)
+        k = await self._c._post("/tenants/me/api-keys", json={"name": name, "test": test})
         return ApiKey(
             id=k["id"],
-            tenant_id=k["tenant_id"],
+            tenant_id=self._c.tenant.id if self._c._tenant else "",
             name=k["name"],
             key=k["key"],
             is_test=k.get("is_test", False),
         )
 
-    async def revoke(self, key_id: str) -> dict:
-        """Revoke (delete) an API key."""
-        return await self._c._delete(f"/tenants/keys/{key_id}")
+    async def revoke(self, key_id: str) -> None:
+        """Revoke an API key."""
+        await self._c._delete(f"/tenants/me/api-keys/{key_id}")

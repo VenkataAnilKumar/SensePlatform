@@ -27,6 +27,8 @@ Change the secrets before deploying to production:
 
 ```env
 SENSE_JWT_SECRET=your-secret-here
+SENSE_RELAY_SECRET=your-relay-secret
+SENSE_SERVICE_KEY=your-mind-wire-shared-key
 ```
 
 ## 2. Start the platform
@@ -59,7 +61,7 @@ curl -s -X POST http://localhost:3000/tenants \
   -d '{"name": "Acme Corp", "slug": "acme", "email": "dev@acme.com"}' | jq .
 ```
 
-Check `http://localhost:3000/docs` for the response fields. Then create a key with `POST /tenants/me/api-keys`; use that key in the `X-API-Key` header for all further requests.
+The response contains `api_key` — **it is shown only once** (Gate stores a hash). Create more keys with `POST /tenants/me/api-keys`; use a key in the `X-API-Key` header for all further requests.
 
 ## 4. Start an AI agent
 
@@ -162,7 +164,7 @@ channel.on("message.new", (msg) => console.log(msg.text));
 await channel.sendMessage("Hello from the browser!");
 
 // Lens events
-const lenses = new LensStream(client.wire, "demo");
+const lenses = new LensStream(client.wire, "demo"); // subscribes to the room's lens channel
 lenses.onMood((e) => console.log(`Mood: ${e.mood} — ${e.contextText}`));
 ```
 

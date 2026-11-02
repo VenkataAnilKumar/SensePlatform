@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from vision_agents.core.events import PluginBaseEvent
+from sense_mind.core.events import PluginBaseEvent
 from typing import Optional, Any
 
 

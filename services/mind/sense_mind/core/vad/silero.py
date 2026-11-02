@@ -4,9 +4,9 @@ import time
 
 import numpy as np
 import onnxruntime as ort
-from getstream.video.rtc import PcmData
+from sense_mind.core.utils.pcm import PcmData
 from typing_extensions import Self
-from vision_agents.core.utils.utils import ensure_model
+from sense_mind.core.utils.utils import ensure_model
 
 __all__ = ("SileroVADSession", "SileroVADSessionPool", "SILERO_CHUNK")
 

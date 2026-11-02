@@ -2,7 +2,7 @@ import abc
 import asyncio
 from typing import Any, Generic, Type, TypeVar
 
-from vision_agents.core.utils.utils import await_or_run
+from sense_mind.core.utils.utils import await_or_run
 
 __all__ = (
     "Warmable",

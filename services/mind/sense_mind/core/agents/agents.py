@@ -15,7 +15,7 @@ from typing import (
 from uuid import uuid4
 
 from aiortc import VideoStreamTrack
-from getstream.video.rtc import AudioStreamTrack, PcmData
+from sense_mind.core.utils.pcm import AudioStreamTrack, PcmData
 from opentelemetry import context as otel_context
 from opentelemetry import trace
 from opentelemetry.context import Token
@@ -87,7 +87,7 @@ class Agent:
 
         # realtime mode
         agent = Agent(
-            edge=getstream.Edge(),
+            edge=RelayTransport(),
             agent_user=agent_user,
             instructions="Read @voice-agent.md",
             llm=gemini.Realtime(),

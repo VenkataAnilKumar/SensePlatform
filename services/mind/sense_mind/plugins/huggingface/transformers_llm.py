@@ -4,7 +4,7 @@ TransformersLLM - Local text LLM inference via HuggingFace Transformers.
 Runs models directly on your hardware (GPU/CPU/MPS) instead of calling APIs.
 
 Example:
-    from vision_agents.plugins.huggingface import TransformersLLM
+    from sense_mind.plugins.huggingface import TransformersLLM
 
     llm = TransformersLLM(model="meta-llama/Llama-3.2-3B-Instruct")
 
@@ -35,14 +35,14 @@ from transformers import (
     PreTrainedTokenizerBase,
     TextStreamer,
 )
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
-from vision_agents.core.warmup import Warmable
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.warmup import Warmable
 
 from . import events
 

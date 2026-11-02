@@ -1,15 +1,12 @@
 """Twilio Media Stream WebSocket handler."""
 
+import asyncio
 import base64
 import json
 import logging
-from typing import Any, Protocol
+from typing import Any, Awaitable, Callable, Protocol
 
-from getstream.video import rtc
-from getstream.video.rtc.audio_track import AudioStreamTrack
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import TrackType
-from getstream.video.rtc.track_util import PcmData
-from getstream.video.rtc.tracks import SubscriptionConfig, TrackSubscriptionConfig
+from sense_mind.core.utils.pcm import AudioStreamTrack, PcmData
 
 from .audio import mulaw_to_pcm, pcm_to_mulaw, TWILIO_SAMPLE_RATE
 
@@ -63,6 +60,11 @@ class TwilioMediaStream:
             format="s16",
         )
         self._connected = False
+        self._audio_sinks: list[Callable[[PcmData], Awaitable[None]]] = []
+
+    def add_audio_sink(self, sink: Callable[[PcmData], Awaitable[None]]) -> None:
+        """Register an async callback that receives every decoded caller audio chunk."""
+        self._audio_sinks.append(sink)
 
     async def accept(self) -> None:
         """Accept the WebSocket connection."""
@@ -101,6 +103,8 @@ class TwilioMediaStream:
                         # Convert to PCM and write to audio track
                         pcm = mulaw_to_pcm(mulaw_bytes)
                         await self.audio_track.write(pcm)
+                        for sink in self._audio_sinks:
+                            await sink(pcm)
 
                         if not has_seen_media:
                             logger.info(
@@ -151,27 +155,67 @@ class TwilioMediaStream:
 
 
 async def attach_phone_to_call(
-    call, twilio_stream: TwilioMediaStream, user_id: str
-) -> None:
+    room_name: str,
+    twilio_stream: TwilioMediaStream,
+    user_id: str,
+    relay_url: str = "ws://localhost:7880",
+    api_key: str = "sense_gateway",
+    api_secret: str = "secret_change_in_production",
+):
     """
-    Attach a phone user to a Stream call, bridging audio between Twilio and Stream.
+    Bridge a Twilio phone call into a Sense Relay room.
 
-    Args:
-        call: The Stream call to attach to.
-        twilio_stream: The TwilioMediaStream handling the Twilio WebSocket.
-        user_id: The user ID for the phone participant.
+    The phone caller joins ``room_name`` as participant ``user_id``: caller audio
+    is published to the room, and room audio is sent back to the phone.
+
+    Returns the connected ``livekit.rtc.Room``; call ``await room.disconnect()``
+    when the call ends.
     """
-    subscription_config = SubscriptionConfig(
-        default=TrackSubscriptionConfig(track_types=[TrackType.TRACK_TYPE_AUDIO])
+    from livekit import api, rtc
+
+    token = (
+        api.AccessToken(api_key, api_secret)
+        .with_identity(user_id)
+        .with_name(user_id)
+        .with_grants(api.VideoGrants(room_join=True, room=room_name))
+        .to_jwt()
     )
+    room = rtc.Room()
+    source = rtc.AudioSource(sample_rate=48000, num_channels=1)
 
-    connection = await rtc.join(call, user_id, subscription_config=subscription_config)
+    async def publish_caller_audio(pcm: PcmData) -> None:
+        pcm48 = pcm.resample(48000, 1).to_int16()
+        await source.capture_frame(
+            rtc.AudioFrame(
+                data=pcm48.to_bytes(),
+                sample_rate=48000,
+                num_channels=1,
+                samples_per_channel=len(pcm48.samples),
+            )
+        )
 
-    @connection.on("audio")
-    async def on_audio_received(pcm: PcmData):
-        await twilio_stream.send_audio(pcm)
+    @room.on("track_subscribed")
+    def on_track_subscribed(track, publication, participant):
+        if track.kind != rtc.TrackKind.KIND_AUDIO:
+            return
 
-    await connection.__aenter__()
-    await connection.add_tracks(audio=twilio_stream.audio_track, video=None)
+        async def pump():
+            async for event in rtc.AudioStream(
+                track, sample_rate=TWILIO_SAMPLE_RATE, num_channels=1
+            ):
+                pcm = PcmData.from_bytes(
+                    bytes(event.frame.data), sample_rate=TWILIO_SAMPLE_RATE, channels=1
+                )
+                await twilio_stream.send_audio(pcm)
 
-    logger.info(f"Phone user {user_id} attached to call")
+        asyncio.ensure_future(pump())
+
+    await room.connect(relay_url, token)
+    await room.local_participant.publish_track(
+        rtc.LocalAudioTrack.create_audio_track("phone-audio", source),
+        rtc.TrackPublishOptions(source=rtc.TrackSource.SOURCE_MICROPHONE),
+    )
+    twilio_stream.add_audio_sink(publish_caller_audio)
+
+    logger.info("Phone user %s attached to Relay room %s", user_id, room_name)
+    return room

@@ -1,9 +1,9 @@
 from typing import Optional
 
 import aiofiles
-from getstream.video.rtc import PcmData
-from vision_agents.core.tts import TTS
-from vision_agents.core.tts.testing import TTSSession
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.tts import TTS
+from sense_mind.core.tts.testing import TTSSession
 import asyncio
 import os
 import shutil

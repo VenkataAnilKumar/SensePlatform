@@ -14,7 +14,7 @@ Available tools:
 - ComputerUse: Interact with browser UIs (Preview)
 
 Usage:
-    from vision_agents.plugins.gemini import LLM, tools
+    from sense_mind.plugins.gemini import LLM, tools
 
     llm = LLM(
         model="gemini-2.5-flash",

@@ -6,8 +6,8 @@ from typing import AsyncIterator, Iterator, List, Optional
 
 import numpy as np
 
-from vision_agents.core import tts
-from getstream.video.rtc.track_util import PcmData, AudioFormat
+from sense_mind.core import tts
+from sense_mind.core.utils.pcm import PcmData, AudioFormat
 
 try:
     from kokoro import KPipeline  # type: ignore

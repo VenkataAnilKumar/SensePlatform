@@ -3,8 +3,8 @@ from typing import Optional
 
 from openai import AsyncOpenAI
 
-from vision_agents.core.tts.tts import TTS as BaseTTS
-from getstream.video.rtc.track_util import PcmData, AudioFormat
+from sense_mind.core.tts.tts import TTS as BaseTTS
+from sense_mind.core.utils.pcm import PcmData, AudioFormat
 
 
 class TTS(BaseTTS):

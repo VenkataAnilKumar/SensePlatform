@@ -12,8 +12,8 @@ from typing import (
     Optional,
 )
 
-from vision_agents.core.utils.utils import await_or_run, cancel_and_wait
-from vision_agents.core.warmup import Warmable, WarmupCache
+from sense_mind.core.utils.utils import await_or_run, cancel_and_wait
+from sense_mind.core.warmup import Warmable, WarmupCache
 
 from .exceptions import (
     InvalidCallId,

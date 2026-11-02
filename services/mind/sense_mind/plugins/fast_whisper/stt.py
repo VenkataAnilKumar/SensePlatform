@@ -6,12 +6,12 @@ from typing import Literal, Optional
 
 from faster_whisper import WhisperModel
 from faster_whisper.transcribe import Segment, TranscriptionInfo
-from getstream.video.rtc.track_util import AudioFormat, PcmData
+from sense_mind.core.utils.pcm import AudioFormat, PcmData
 from numpy.typing import NDArray
-from vision_agents.core import stt
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.stt.events import TranscriptResponse
-from vision_agents.core.warmup import Warmable
+from sense_mind.core import stt
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.stt.events import TranscriptResponse
+from sense_mind.core.warmup import Warmable
 
 logger = logging.getLogger(__name__)
 

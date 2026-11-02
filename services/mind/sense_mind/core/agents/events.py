@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from vision_agents.core.events import BaseEvent, PluginBaseEvent
+from sense_mind.core.events import BaseEvent, PluginBaseEvent
 
 
 @dataclass

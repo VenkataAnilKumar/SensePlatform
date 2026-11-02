@@ -19,12 +19,12 @@ from rfdetr.detr import (
     RFDETRSmall,
 )
 from supervision import Detections
-from vision_agents.core import Agent
-from vision_agents.core.events import EventManager
-from vision_agents.core.processors.base_processor import VideoProcessorPublisher
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_track import QueuedVideoTrack
-from vision_agents.core.warmup import Warmable
+from sense_mind.core import Agent
+from sense_mind.core.events import EventManager
+from sense_mind.core.processors.base_processor import VideoProcessorPublisher
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_track import QueuedVideoTrack
+from sense_mind.core.warmup import Warmable
 
 from .events import DetectedObject, DetectionCompletedEvent
 from .annotation import annotate_image
@@ -61,8 +61,8 @@ class RoboflowLocalDetectionProcessor(VideoProcessorPublisher, Warmable[RFDETR])
     Example usage:
 
         ```
-        from vision_agents.core import Agent
-        from vision_agents.plugins import roboflow
+        from sense_mind.core import Agent
+        from sense_mind.plugins import roboflow
 
         processor = roboflow.RoboflowLocalDetectionProcessor(...)
 

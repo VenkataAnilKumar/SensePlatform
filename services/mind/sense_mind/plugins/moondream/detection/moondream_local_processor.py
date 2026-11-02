@@ -11,14 +11,14 @@ import numpy as np
 import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM
-from vision_agents.core.agents.agent_types import AgentOptions, default_agent_options
-from vision_agents.core.processors.base_processor import VideoProcessorPublisher
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.warmup import Warmable
-from vision_agents.plugins.moondream.detection.moondream_video_track import (
+from sense_mind.core.agents.agent_types import AgentOptions, default_agent_options
+from sense_mind.core.processors.base_processor import VideoProcessorPublisher
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.warmup import Warmable
+from sense_mind.plugins.moondream.detection.moondream_video_track import (
     MoondreamVideoTrack,
 )
-from vision_agents.plugins.moondream.moondream_utils import (
+from sense_mind.plugins.moondream.moondream_utils import (
     annotate_detections,
     handle_device,
     parse_detection_bbox,

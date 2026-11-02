@@ -5,9 +5,9 @@ from typing import Any, AsyncIterator, Iterator, Literal
 
 import numpy as np
 
-from getstream.video.rtc.track_util import AudioFormat, PcmData
-from vision_agents.core import tts
-from vision_agents.core.warmup import Warmable
+from sense_mind.core.utils.pcm import AudioFormat, PcmData
+from sense_mind.core import tts
+from sense_mind.core.warmup import Warmable
 
 from pocket_tts import TTSModel
 

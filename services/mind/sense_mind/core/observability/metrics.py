@@ -1,6 +1,6 @@
-"""OpenTelemetry observability instrumentation for vision-agents library.
+"""OpenTelemetry observability instrumentation for Sense Mind engine.
 
-This module defines metrics for the vision-agents library. It does NOT configure
+This module defines metrics for the Sense Mind engine. It does NOT configure
 OpenTelemetry providers - that is the responsibility of applications using this library.
 
 Metrics are recorded by the MetricsCollector class, which subscribes to events from
@@ -9,7 +9,7 @@ core logic and makes metrics collection opt-in.
 
 For applications using this library:
     To enable telemetry, configure OpenTelemetry in your application before importing
-    vision-agents components:
+    Sense Mind components:
 
     ```python
     from opentelemetry import metrics
@@ -25,7 +25,7 @@ For applications using this library:
     agent = Agent(llm=OpenAILLM(), stt=DeepgramSTT(), ...)
 
     # Opt-in to metrics collection
-    from vision_agents.core.observability import MetricsCollector
+    from sense_mind.core.observability import MetricsCollector
     collector = MetricsCollector(agent)
     ```
 
@@ -37,7 +37,7 @@ from opentelemetry import metrics
 # Get meter using the library name
 # Will use whatever provider the application has configured
 # If no provider is configured, metrics will be no-ops
-meter = metrics.get_meter("vision_agents.core")
+meter = metrics.get_meter("sense_mind.core")
 
 # =============================================================================
 # STT Metrics

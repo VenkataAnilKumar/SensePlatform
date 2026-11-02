@@ -95,7 +95,8 @@ SensePlatform/
 │   ├── sense-py/                       # Python developer SDK (Phase 7)
 │   └── sense-js/                       # JavaScript SDK (Phase 4)
 ├── examples/
-│   └── contact_center/agent.py         # Phase 1 validation example
+│   ├── contact-center/agent.py         # Emotion-aware contact center
+│   ├── sales-coach/ fitness-coach/ telehealth/ security-soc/
 ├── docker-compose.yml                  # One-command startup
 ├── .env.example
 ├── CLAUDE.md                           # This file
@@ -175,8 +176,8 @@ These names are final. Never rename them to match source repos.
 | 3 | Sense Wire — WebSocket chat, Postgres persistence, Redis pub/sub | ✅ Done (2026-03-30) |
 | 4 | sense-js SDK — `@sense/core`, `@sense/vision`, `@sense/chat`, `@sense/lens` | ✅ Done (2026-03-30) |
 | 5 | Sense Console — developer dashboard (shadcn/ui + Next.js) | ✅ Done (2026-03-30) |
-| 6 | Vision pipeline hardening — Processor Config API (`/agents/{room}/lenses/{lens}/configure`), Vision Event Stream (`LensEventBridge` → Wire) | ✅ Implemented (see docs/architecture.md for known gaps) |
-| 7 | sense-py SDK + full developer documentation | ✅ Done (docs partially written — see docs/) |
+| 6 | Vision pipeline hardening — Processor Config API (`/agents/{room}/lenses/{lens}/configure`), Vision Event Stream (`LensEventBridge` → Wire) | ✅ Done |
+| 7 | sense-py SDK + full developer documentation | ✅ Done |
 | 8 | 5 product examples — contact-center, sales-coach, fitness-coach, telehealth, security-soc | ✅ Done |
 
 ---
@@ -262,6 +263,7 @@ POST /channels/:type/:id/event  — send custom event
 | `SENSE_RELAY_URL` | `ws://localhost:7880` | WebSocket URL of Sense Relay |
 | `SENSE_RELAY_API_KEY` | `sense_gateway` | Relay API key |
 | `SENSE_RELAY_SECRET` | `secret_change_in_production` | Relay API secret |
+| `SENSE_SERVICE_KEY` | `sense_service_key_change_in_production` | Shared secret: Sense Mind → Sense Wire lens events |
 | `SENSE_ROOM` | `default` | Default room name for agent to join |
 | `ANTHROPIC_API_KEY` | — | Anthropic Claude API key |
 | `OPENAI_API_KEY` | — | OpenAI API key |
@@ -271,13 +273,9 @@ POST /channels/:type/:id/event  — send custom event
 
 ---
 
-## Known Gaps (verified by code review — see docs/architecture.md)
+## Known Gaps
 
-1. `services/mind/sense_mind/core/` still imports `getstream` and `vision_agents` (violates Hard Rule 1).
-2. Lenses are stored in `SenseMind._processors`, but `Agent` only feeds frames to `Agent.processors` (VideoProcessor instances), so `process_frame()` is never called.
-3. `BaseLens._emit` uses `asyncio.coroutine` (removed in Python 3.11) for sync callbacks.
-4. Gate rate limiting is a no-op: `RateLimitMiddleware` is constructed with `redis_client=None`.
-5. `examples/contact-center/` and `examples/contact_center/` are two different files; consolidate.
+See `docs/architecture.md` §5. Open items: agent video publishing to Relay, and the Python SDK's `channels.*` REST helpers (use `SenseWire` for chat).
 
 ## Auto-save Rule
 

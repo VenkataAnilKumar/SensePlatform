@@ -1,5 +1,5 @@
 from fastapi import Request
-from vision_agents.core import AgentLauncher
+from sense_mind.core import AgentLauncher
 
 from .options import ServeOptions
 

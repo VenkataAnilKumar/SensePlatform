@@ -7,10 +7,10 @@ from typing import Any, Iterator, Optional, cast
 
 import av
 from aiortc.mediastreams import MediaStreamTrack, VideoStreamTrack
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.edge.types import Participant
 from huggingface_hub import AsyncInferenceClient
 from huggingface_hub.inference._providers import PROVIDER_OR_POLICY_T
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
@@ -18,9 +18,9 @@ from vision_agents.core.llm.events import (
     VLMInferenceCompletedEvent,
     VLMInferenceStartEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent, VideoLLM
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_utils import frame_to_jpeg_bytes
+from sense_mind.core.llm.llm import LLMResponseEvent, VideoLLM
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_utils import frame_to_jpeg_bytes
 
 from . import events
 
@@ -44,7 +44,7 @@ class HuggingFaceVLM(VideoLLM):
 
     Examples:
 
-        from vision_agents.plugins import huggingface
+        from sense_mind.plugins import huggingface
         vlm = huggingface.VLM(model="Qwen/Qwen2-VL-7B-Instruct")
 
     """
