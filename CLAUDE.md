@@ -175,13 +175,13 @@ These names are final. Never rename them to match source repos.
 | 3 | Sense Wire — WebSocket chat, Postgres persistence, Redis pub/sub | ✅ Done (2026-03-30) |
 | 4 | sense-js SDK — `@sense/core`, `@sense/vision`, `@sense/chat`, `@sense/lens` | ✅ Done (2026-03-30) |
 | 5 | Sense Console — developer dashboard (shadcn/ui + Next.js) | ✅ Done (2026-03-30) |
-| 6 | Vision pipeline hardening — Processor Config API, Vision Event Stream | 🔲 Next |
-| 7 | sense-py SDK + full developer documentation | 🔲 |
-| 8 | 5 product examples — contact-center, sales-coach, fitness-coach, telehealth, security-soc | 🔲 |
+| 6 | Vision pipeline hardening — Processor Config API (`/agents/{room}/lenses/{lens}/configure`), Vision Event Stream (`LensEventBridge` → Wire) | ✅ Implemented (see docs/architecture.md for known gaps) |
+| 7 | sense-py SDK + full developer documentation | ✅ Done (docs partially written — see docs/) |
+| 8 | 5 product examples — contact-center, sales-coach, fitness-coach, telehealth, security-soc | ✅ Done |
 
 ---
 
-## Sense Gate — Phase 2 Plan (Next)
+## Sense Gate — Phase 2 (implemented; spec kept for reference)
 
 Build `services/gate/` — FastAPI-based API gateway.
 
@@ -212,7 +212,7 @@ POST /webhooks/register         — register a tenant webhook
 
 ---
 
-## Sense Wire — Phase 3 Plan
+## Sense Wire — Phase 3 (implemented; spec kept for reference)
 
 Build `services/wire/` — real-time messaging.
 
@@ -270,6 +270,14 @@ POST /channels/:type/:id/event  — send custom event
 | `SENSE_MIND_PORT` | `8080` | HTTP control API port |
 
 ---
+
+## Known Gaps (verified by code review — see docs/architecture.md)
+
+1. `services/mind/sense_mind/core/` still imports `getstream` and `vision_agents` (violates Hard Rule 1).
+2. Lenses are stored in `SenseMind._processors`, but `Agent` only feeds frames to `Agent.processors` (VideoProcessor instances), so `process_frame()` is never called.
+3. `BaseLens._emit` uses `asyncio.coroutine` (removed in Python 3.11) for sync callbacks.
+4. Gate rate limiting is a no-op: `RateLimitMiddleware` is constructed with `redis_client=None`.
+5. `examples/contact-center/` and `examples/contact_center/` are two different files; consolidate.
 
 ## Auto-save Rule
 

@@ -51,17 +51,15 @@ After startup, all 5 services are available:
 
 Navigate to http://localhost:4000.
 
-Enter any API key to sign in. To create your first tenant and key via the API:
+Enter an API key to sign in. Create a tenant (and its first API key) through Gate:
 
 ```bash
-# Register a new account
-curl -s -X POST http://localhost:3000/auth/register \
+curl -s -X POST http://localhost:3000/tenants \
   -H "Content-Type: application/json" \
-  -d '{"name": "Acme Corp", "email": "dev@acme.com", "password": "changeme"}' \
-  | jq .
-
-# Note the api_key in the response — use it for all further requests
+  -d '{"name": "Acme Corp", "slug": "acme", "email": "dev@acme.com"}' | jq .
 ```
+
+Check `http://localhost:3000/docs` for the response fields. Then create a key with `POST /tenants/me/api-keys`; use that key in the `X-API-Key` header for all further requests.
 
 ## 4. Start an AI agent
 
@@ -170,7 +168,6 @@ lenses.onMood((e) => console.log(`Mood: ${e.mood} — ${e.contextText}`));
 
 ## Next steps
 
-- [Architecture overview](architecture.md)
-- [Python SDK reference](python-sdk.md)
-- [Building a Contact Center](products/contact-center.md)
-- [Self-hosting in production](self-hosting.md)
+- [Architecture & code review](architecture.md)
+- [Python SDK](../sdks/sense-py/README.md)
+- [Examples](../examples)
