@@ -63,7 +63,7 @@ async def join_room(room_id: str, body: JoinRoomRequest, tenant: TenantDep):
     )
 
     return JoinRoomResponse(
-        relay_url=settings.relay_url,
+        relay_url=settings.relay_client_url,
         relay_token=relay_token,
         room_id=room_id,
         room_name=room_name,

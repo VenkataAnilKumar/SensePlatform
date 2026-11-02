@@ -42,13 +42,15 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
     # ── Startup ───────────────────────────────────────────────────────────────
     logger.info("Sense Gate starting up...")
-    if not settings.debug:
-        for name, value in (
-            ("JWT_SECRET", settings.jwt_secret),
-            ("RELAY_API_SECRET", settings.relay_api_secret),
-        ):
-            if "change_in_production" in value:
-                logger.warning("%s is still the default value — change it before production!", name)
+    insecure = settings.insecure_defaults()
+    if insecure and settings.is_production:
+        raise RuntimeError(
+            "Refusing to start in production with default secrets: " + ", ".join(insecure)
+        )
+    for name in insecure:
+        logger.warning("%s is still the default value — change it before production!", name)
+    if settings.is_production and not settings.admin_api_key:
+        logger.warning("ADMIN_API_KEY is unset — POST /tenants is disabled in production")
 
     # Auto-create tables (dev mode — use Alembic in production)
     if settings.debug:

@@ -12,6 +12,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    # ── Deployment ────────────────────────────────────────────────────────────
+    # "production" refuses to start with default secrets and disables open tenant creation.
+    environment: str = "development"
+    # Protects POST /tenants (send as X-Admin-Key). Required in production.
+    admin_api_key: str = ""
+
     # ── App ──────────────────────────────────────────────────────────────────
     app_name: str = "Sense Gate"
     version: str = "0.1.0"
@@ -32,6 +38,9 @@ class Settings(BaseSettings):
 
     # ── Sense Relay ───────────────────────────────────────────────────────────
     relay_url: str = "ws://localhost:7880"
+    # URL returned to browsers/apps for WebRTC. Defaults to relay_url, but behind
+    # Docker/a proxy it must be the externally reachable address (e.g. wss://relay.example.com).
+    relay_public_url: str = ""
     relay_api_key: str = "sense_gateway"
     relay_api_secret: str = "secret_change_in_production"
 
@@ -49,6 +58,20 @@ class Settings(BaseSettings):
 
     # ── Sense Mind (agent orchestration) ─────────────────────────────────────
     mind_url: str = "http://localhost:8080"
+
+
+    @property
+    def relay_client_url(self) -> str:
+        return self.relay_public_url or self.relay_url
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
+
+    def insecure_defaults(self) -> list[str]:
+        """Names of secrets still set to their shipped default values."""
+        checks = {"JWT_SECRET": self.jwt_secret, "RELAY_API_SECRET": self.relay_api_secret}
+        return [name for name, value in checks.items() if "change_in_production" in value]
 
 
 @lru_cache

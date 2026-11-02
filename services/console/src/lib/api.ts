@@ -4,7 +4,8 @@
  * Reads API key from cookie set at login.
  */
 
-const GATE_URL = process.env.NEXT_PUBLIC_GATE_URL ?? "http://localhost:3000";
+export const GATE_URL = process.env.NEXT_PUBLIC_GATE_URL ?? "http://localhost:3000";
+export const WIRE_URL = process.env.NEXT_PUBLIC_WIRE_URL ?? "ws://localhost:3001";
 
 async function request<T>(
   path: string,
@@ -162,4 +163,36 @@ export const usageApi = {
 
 export const healthApi = {
   check: () => request<{ status: string; service: string }>("/health"),
+};
+
+// ── Live demo ─────────────────────────────────────────────────────────────────
+
+export interface JoinInfo {
+  relay_url: string;
+  relay_token: string;
+  room_id: string;
+  room_name: string;
+}
+
+export const demoApi = {
+  startAgent: (roomId: string, lenses: string[], instructions?: string) =>
+    request<{ status: string; room: string }>("/agents/start", {
+      method: "POST",
+      body: JSON.stringify({ room_id: roomId, lenses, instructions }),
+    }),
+  stopAgent: (roomId: string) =>
+    request<{ status: string }>("/agents/stop", {
+      method: "POST",
+      body: JSON.stringify({ room_id: roomId }),
+    }),
+  token: (userId: string, userName: string) =>
+    request<{ access_token: string }>("/auth/token", {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, user_name: userName }),
+    }),
+  join: (roomId: string, userId: string) =>
+    request<JoinInfo>(`/rooms/${encodeURIComponent(roomId)}/join`, {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, user_name: userId }),
+    }),
 };

@@ -85,6 +85,8 @@ class SenseRunner:
         if port:
             self._port = port
 
+        self._check_secrets()
+
         logging.basicConfig(
             level=self._log_level.upper(),
             format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
@@ -92,6 +94,22 @@ class SenseRunner:
 
         logger.info("SenseRunner starting — port: %d", self._port)
         asyncio.run(self._run())
+
+    @staticmethod
+    def _check_secrets() -> None:
+        """Refuse default secrets when SENSE_ENV=production; warn otherwise."""
+        checks = {
+            "SENSE_RELAY_SECRET": os.environ.get("SENSE_RELAY_SECRET", "secret_change_in_production"),
+            "SENSE_WIRE_API_KEY": os.environ.get("SENSE_WIRE_API_KEY", ""),
+        }
+        bad = [k for k, v in checks.items() if "change_in_production" in v]
+        if not bad:
+            return
+        if os.environ.get("SENSE_ENV", "development").lower() == "production":
+            raise RuntimeError("Refusing to start in production with default secrets: " + ", ".join(bad))
+        logging.getLogger(__name__).warning(
+            "Default secrets in use (%s) — change them before production!", ", ".join(bad)
+        )
 
     # ── Internal entry point ──────────────────────────────────────────────────
 

@@ -41,3 +41,9 @@ Thumbs.db
 
 # Downloaded source repos (raw material only — not committed)
 Repos/
+
+# Node / Next.js (Sense Console, sense-js)
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo

@@ -61,6 +61,8 @@ curl -s -X POST http://localhost:3000/tenants \
   -d '{"name": "Acme Corp", "slug": "acme", "email": "dev@acme.com"}' | jq .
 ```
 
+(In production — `SENSE_ENV=production` — tenant creation requires the `X-Admin-Key` header set to `SENSE_ADMIN_KEY`, and the services refuse to start with default secrets.)
+
 The response contains `api_key` — **it is shown only once** (Gate stores a hash). Create more keys with `POST /tenants/me/api-keys`; use a key in the `X-API-Key` header for all further requests.
 
 ## 4. Start an AI agent
