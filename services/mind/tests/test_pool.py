@@ -79,3 +79,19 @@ async def test_failed_join_is_reported(pool):
     res = await pool.start(AgentConfig(room="bad", instructions="fail"))
     assert res["status"] == "failed" and "relay down" in res["error"]
     assert pool.status()["count"] == 0
+
+
+def test_stt_tts_auto_selection_from_env(monkeypatch):
+    for k in ("DEEPGRAM_API_KEY", "ASSEMBLYAI_API_KEY", "ELEVENLABS_API_KEY", "CARTESIA_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    assert pool_mod._resolve_stt(None) is None      # no keys -> no STT (agent cannot hear)
+    assert pool_mod._resolve_tts(None) is None
+    assert pool_mod._resolve_stt("none") is None and pool_mod._resolve_tts("none") is None
+
+
+def test_explicit_stt_name_is_imported(monkeypatch):
+    import types
+    sentinel = object()
+    fake = types.SimpleNamespace(STT=lambda: sentinel)
+    monkeypatch.setitem(__import__("sys").modules, "sense_mind.plugins.fakestt", fake)
+    assert pool_mod._resolve_stt("fakestt") is sentinel
