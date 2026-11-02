@@ -12,6 +12,7 @@
 [![Docker Compose](https://img.shields.io/badge/docker_compose_up-ready-22C55E?style=flat-square&logo=docker&logoColor=white)](docker-compose.yml)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3B82F6?style=flat-square&logo=python&logoColor=white)](sdks/sense-py)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3B82F6?style=flat-square&logo=typescript&logoColor=white)](sdks/sense-js)
+[![CI](https://github.com/VenkataAnilKumar/SensePlatform/actions/workflows/ci.yml/badge.svg)](https://github.com/VenkataAnilKumar/SensePlatform/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22C55E?style=flat-square)](https://github.com/VenkataAnilKumar/SensePlatform/pulls)
 
 <br/>
@@ -176,14 +177,16 @@ Step 6  Streaming vision lens events
 <summary><strong>Vision Lenses</strong></summary>
 <br/>
 
-Lenses are throttled vision processors that **inject context directly into the agent's LLM prompt** mid-conversation — no prompt engineering required.
+Lenses are throttled vision processors. Each observation is added to the agent's LLM instructions mid-conversation and streamed to browsers over Sense Wire.
+
+> Lenses need YOLO model weights (`yolov8n-pose.pt` etc.), which are not shipped — Ultralytics downloads them on first use.
 
 | Lens | What it detects | Throttle |
 |------|----------------|:--------:|
-| **MoodLens** | Emotion — frustrated · confused · satisfied · happy | 3 s |
+| **MoodLens** | Mood estimate from body pose — neutral · satisfied · confused · frustrated (heuristic, not a facial-emotion model) | 3 s |
 | **PoseLens** | Body keypoints — posture, form faults, gestures | 2 s |
-| **GuardLens** | Safety — weapons, explicit content, fire/smoke, tailgating | 2 s |
-| **FaceLens** | Presence — face count, occupancy, identity continuity | 5 s |
+| **GuardLens** | Safety — weapon-like objects (knife, scissors, gun, bat) via YOLO; violations bypass the throttle | 2 s |
+| **FaceLens** | Presence — face count, occupancy, no-face / multiple-face alerts | 5 s |
 
 </details>
 
@@ -191,7 +194,7 @@ Lenses are throttled vision processors that **inject context directly into the a
 
 ## 🚀 Quick Start
 
-> **Prerequisites:** Docker Desktop · one LLM API key (Anthropic recommended)
+> **Prerequisites:** Docker with Compose · an Anthropic API key for the agent's LLM. Voice also needs Deepgram (STT) and ElevenLabs (TTS) keys; vision lenses work without them.
 
 ### 1 · Clone and configure
 
@@ -201,33 +204,39 @@ cd SensePlatform
 cp .env.example .env
 ```
 
-Add your key to `.env`:
+Add your keys to `.env`:
 
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
+DEEPGRAM_API_KEY=...      # optional — agent can hear
+ELEVENLABS_API_KEY=...    # optional — agent can speak
 ```
 
 ### 2 · Start the platform
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-All five services start automatically. First run pulls images (~2 min). After ~30 s:
+The first run builds the images (several minutes — the Mind image includes PyTorch for the vision lenses). When it settles:
 
 | URL | Service |
 |-----|---------|
 | **http://localhost:4000** | Sense Console — developer dashboard |
-| http://localhost:3000 | Sense Gate — REST API |
+| http://localhost:3000 | Sense Gate — REST API (`/docs` for OpenAPI) |
 | ws://localhost:3001 | Sense Wire — WebSocket |
 | http://localhost:8080 | Sense Mind — agent control |
 | ws://localhost:7880 | Sense Relay — WebRTC |
 
-### 3 · Run the demo
+### 3 · Create a tenant and API key
 
 ```bash
-python demo.py
+curl -s -X POST http://localhost:3000/tenants \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Acme", "slug": "acme", "email": "dev@acme.com"}' | jq .
 ```
+
+Copy `api_key` from the response — **it is shown once** (only a hash is stored). Sign in to the Console with it.
 
 ### 4 · Start your first AI agent
 
@@ -243,6 +252,12 @@ curl -s -X POST http://localhost:3000/agents/start \
   }' | jq .
 ```
 
+Then get a join token for a browser or app with `POST /rooms/demo/join`, and run `python demo.py` for a guided walkthrough.
+
+### Production
+
+Set `SENSE_ENV=production`: services then refuse to start with default secrets, and `POST /tenants` requires an `X-Admin-Key` header (`SENSE_ADMIN_KEY`). Change at least `SENSE_JWT_SECRET`, `SENSE_RELAY_SECRET` and `SENSE_SERVICE_KEY`, and put the stack behind TLS (browsers only allow camera access on HTTPS or `localhost`).
+
 ---
 
 ## 🛠 SDKs
@@ -250,7 +265,7 @@ curl -s -X POST http://localhost:3000/agents/start \
 ### Python SDK
 
 ```bash
-pip install sense-platform
+pip install ./sdks/sense-py      # from this repository
 ```
 
 ```python
@@ -282,7 +297,8 @@ asyncio.run(main())
 ### TypeScript / JavaScript SDK
 
 ```bash
-npm install @sense/core @sense/vision @sense/chat @sense/lens
+# packages live in sdks/sense-js (build from source)
+cd sdks/sense-js && npm install
 ```
 
 ```typescript
@@ -360,10 +376,12 @@ curl http://localhost:8080/agents/status
 
 # Tune lens throttle at runtime — zero downtime
 curl -X POST http://localhost:8080/agents/acme__room-1/lenses/mood_lens/configure \
+  -H "Content-Type: application/json" \
   -d '{"throttle_seconds": 5.0, "enabled": true}'
 
 # Stop an agent
 curl -X POST http://localhost:8080/agents/stop \
+  -H "Content-Type: application/json" \
   -d '{"room": "acme__room-1"}'
 ```
 
@@ -371,7 +389,7 @@ curl -X POST http://localhost:8080/agents/stop \
 
 ## 📦 Examples
 
-Five production-grade examples in [`examples/`](examples/):
+Five example agents in [`examples/`](examples/):
 
 | Example | Lenses | What it does |
 |---------|--------|-------------|
@@ -401,16 +419,23 @@ ZONE_TYPE=restricted ZONE_ID=server-room-a python examples/security-soc/agent.py
 | | |
 |--|--|
 | [**Quick Start**](docs/quickstart.md) | Up and running in 5 minutes |
-| [**Architecture**](docs/architecture.md) | How the five services connect, data flow, multi-tenancy |
-| [**Self-Hosting Guide**](docs/self-hosting.md) | TLS, backups, horizontal scaling, production checklist |
-| [**Python SDK Reference**](docs/python-sdk.md) | Full API reference for every class and method |
-| [**Contact Center Tutorial**](docs/products/contact-center.md) | End-to-end product guide with React frontend + Python supervisor |
+| [**Architecture & review**](docs/architecture.md) | How the services connect, data flow, resolved issues and known limitations |
+| [**Python SDK**](sdks/sense-py/README.md) | `SenseClient`, `SenseWire`, `LensStream` |
 
 ---
 
 ## ✅ Project Status
 
-All eight phases shipped.
+All eight build phases are implemented. Continuous integration runs the unit tests for Mind, Gate and Wire, builds the Console, and runs a `docker compose` smoke test.
+
+**Verified end to end** (real Postgres, Redis, Relay, Gate, Wire and Mind): tenant and API-key flow, tokens, room joins, agent start/stop, WebSocket chat with threads and history, and the vision pipeline — video published to Relay → YOLO lens → Wire → browser WebSocket — for MoodLens, PoseLens and FaceLens. The Console builds and signs in against Gate.
+
+**Not yet verified / known limitations**
+- The spoken conversation loop (STT → LLM → TTS) has not been exercised with real provider keys.
+- Agents cannot publish video to Relay (audio only).
+- Mood detection is a pose heuristic — treat it as a prototype signal.
+- The Python SDK's `channels.*` REST helpers do not match Wire's routes; use `SenseWire` for chat.
+- The Docker images were not buildable in the development sandbox; the CI `docker compose` smoke test is their first end-to-end check.
 
 | | Phase | What shipped |
 |-|-------|-------------|
@@ -420,7 +445,7 @@ All eight phases shipped.
 | ✅ | **4 — JS SDK** | `@sense/core` · `@sense/vision` · `@sense/chat` · `@sense/lens` |
 | ✅ | **5 — Console** | Next.js developer dashboard — rooms, agents, keys, webhooks, usage |
 | ✅ | **6 — Agent Pool** | Multi-agent pool · LensEventBridge · Vision Event Stream · `/agents` API |
-| ✅ | **7 — Py SDK + Docs** | `sense-platform` Python SDK · quickstart · architecture · self-hosting guide |
+| ✅ | **7 — Py SDK + Docs** | `sense-platform` Python SDK · quickstart · architecture |
 | ✅ | **8 — Examples** | Contact center · sales coach · fitness coach · telehealth · security SOC |
 
 ---
