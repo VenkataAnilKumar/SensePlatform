@@ -107,7 +107,11 @@ class AgentPool:
             # Previous task died — remove stale entry and restart
             del self._agents[config.room]
 
-        agent = _build_agent(config)
+        try:
+            agent = _build_agent(config)
+        except Exception as exc:  # missing plugin, bad API key, unknown model...
+            logger.error("AgentPool.start: could not build agent for %s: %r", config.room, exc)
+            return {"status": "failed", "room": config.room, "error": f"{type(exc).__name__}: {exc}"}
 
         # Wire lens event forwarding
         for lens in _lenses_of(agent):

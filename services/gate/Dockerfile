@@ -22,4 +22,5 @@ ENV PYTHONUNBUFFERED=1 \
 
 EXPOSE 3000
 
-CMD ["uvicorn", "sense_gate.main:app", "--host", "0.0.0.0", "--port", "3000"]
+# Apply migrations, then serve
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn sense_gate.main:app --host 0.0.0.0 --port 3000"]

@@ -8,6 +8,7 @@ Channel key format: wire:{tenant_id}:{channel_type}:{channel_id}
 
 import asyncio
 import json
+import uuid
 import logging
 from typing import Any, Callable
 
@@ -43,6 +44,9 @@ class RedisPubSub:
         self._pubsub: aioredis.client.PubSub | None = None
         self._subscriptions: dict[str, list[Callable]] = {}
         self._listener_task: asyncio.Task | None = None
+        # Identifies this Wire instance so it can ignore its own published events
+        # (they are already delivered to local sockets directly).
+        self._instance_id = uuid.uuid4().hex
 
     async def connect(self):
         self._redis = aioredis.from_url(settings.redis_url, decode_responses=True)
@@ -61,7 +65,7 @@ class RedisPubSub:
             return
         key = _channel_key(tenant_id, channel_type, channel_id)
         try:
-            await self._redis.publish(key, json.dumps(event))
+            await self._redis.publish(key, json.dumps({**event, "_origin": self._instance_id}))
         except Exception as e:
             logger.error("Redis publish error: %s", e)
 
@@ -119,6 +123,8 @@ class RedisPubSub:
                     event = json.loads(message["data"])
                 except json.JSONDecodeError:
                     continue
+                if event.pop("_origin", None) == self._instance_id:
+                    continue  # already delivered locally by this instance
                 for cb in callbacks:
                     try:
                         if asyncio.iscoroutinefunction(cb):

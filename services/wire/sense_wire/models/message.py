@@ -66,11 +66,11 @@ class Message(Base):
     channel: Mapped["Channel"] = relationship(back_populates="messages")  # noqa: F821
     reactions: Mapped[list["Reaction"]] = relationship(back_populates="message", cascade="all, delete-orphan")
     attachments: Mapped[list["Attachment"]] = relationship(back_populates="message", cascade="all, delete-orphan")
+    parent: Mapped["Message | None"] = relationship(
+        "Message", remote_side="Message.id", back_populates="replies"
+    )
     replies: Mapped[list["Message"]] = relationship(
-        "Message",
-        foreign_keys=[parent_id],
-        backref="parent",
-        lazy="dynamic",
+        "Message", back_populates="parent", foreign_keys=[parent_id]
     )
 
     def __repr__(self) -> str:
