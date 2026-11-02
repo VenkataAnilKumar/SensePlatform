@@ -9,13 +9,13 @@ from typing import Any, Optional, cast
 import aiortc
 import av
 from aiortc import VideoStreamTrack
-from getstream.video.rtc import PcmData
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.llm import Realtime
-from vision_agents.core.llm.events import LLMResponseChunkEvent
-from vision_agents.core.llm.llm import LLMResponseEvent
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_utils import frame_to_jpeg_bytes
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm import Realtime
+from sense_mind.core.llm.events import LLMResponseChunkEvent
+from sense_mind.core.llm.llm import LLMResponseEvent
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_utils import frame_to_jpeg_bytes
 
 from . import events
 from .client import Qwen3RealtimeClient

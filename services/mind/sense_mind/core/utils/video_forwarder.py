@@ -7,7 +7,7 @@ from typing import Any, Callable, Optional
 import av
 from aiortc import MediaStreamError, VideoStreamTrack
 from av.frame import Frame
-from vision_agents.core.utils.video_queue import VideoLatestNQueue
+from sense_mind.core.utils.video_queue import VideoLatestNQueue
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,8 @@
 import uuid
 
-from getstream.video.rtc import PcmData
+from sense_mind.core.utils.pcm import PcmData
 
-from vision_agents.core.events import PluginBaseEvent, ConnectionState
+from sense_mind.core.events import PluginBaseEvent, ConnectionState
 from dataclasses import dataclass, field
 from typing import Optional, Any
 

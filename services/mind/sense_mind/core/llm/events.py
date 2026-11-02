@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from getstream.video.rtc import PcmData
+from sense_mind.core.utils.pcm import PcmData
 
-from vision_agents.core.agents.transcript.buffer import TranscriptMode
-from vision_agents.core.events import PluginBaseEvent
+from sense_mind.core.agents.transcript.buffer import TranscriptMode
+from sense_mind.core.events import PluginBaseEvent
 from typing import Optional, Any, Dict
 import uuid
 

@@ -22,12 +22,12 @@ import websockets
 from websockets.asyncio.client import ClientConnection
 from xai_sdk import AsyncClient
 
-from getstream.video.rtc.track_util import PcmData
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.llm import realtime
-from vision_agents.core.llm.events import LLMResponseChunkEvent
-from vision_agents.core.llm.llm import LLMResponseEvent
-from vision_agents.core.llm.llm_types import ToolSchema
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm import realtime
+from sense_mind.core.llm.events import LLMResponseChunkEvent
+from sense_mind.core.llm.llm import LLMResponseEvent
+from sense_mind.core.llm.llm_types import ToolSchema
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class XAIRealtime(realtime.Realtime):
 
     Examples:
 
-        from vision_agents.plugins import xai
+        from sense_mind.plugins import xai
 
         # Basic usage (web_search and x_search enabled by default)
         llm = xai.Realtime()

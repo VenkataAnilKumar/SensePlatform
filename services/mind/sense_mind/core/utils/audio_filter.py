@@ -2,10 +2,10 @@ import abc
 import logging
 from typing import Optional
 
-from getstream.video.rtc import PcmData
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.vad.silero import SileroVADSession, SileroVADSessionPool
-from vision_agents.core.warmup import Warmable
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.vad.silero import SileroVADSession, SileroVADSessionPool
+from sense_mind.core.warmup import Warmable
 
 logger = logging.getLogger(__name__)
 

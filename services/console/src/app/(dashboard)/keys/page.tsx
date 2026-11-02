@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Copy, Trash2, Key } from "lucide-react";
+import { Plus, Trash2, Key } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { apiKeysApi, type ApiKey } from "@/lib/api";
 
@@ -12,6 +12,7 @@ export default function ApiKeysPage() {
   const [newName, setNewName] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [newKey, setNewKey] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -24,8 +25,10 @@ export default function ApiKeysPage() {
     e.preventDefault();
     setCreating(true);
     try {
-      const key = await apiKeysApi.create(newName || "New Key");
-      setKeys((prev) => [...prev, key]);
+      const created = await apiKeysApi.create(newName || "New Key");
+      setNewKey(created.key);  // shown once; only the prefix is retrievable later
+      const { key: _raw, ...stored } = created;
+      setKeys((prev) => [...prev, stored]);
       setNewName("");
       setShowCreate(false);
     } finally {
@@ -63,6 +66,32 @@ export default function ApiKeysPage() {
           </button>
         }
       />
+
+      {/* One-time reveal of a newly created key */}
+      {newKey && (
+        <div className="mb-4 bg-amber-50 rounded-xl border border-amber-200 p-5">
+          <p className="text-sm font-medium text-amber-900 mb-2">
+            Copy your new API key now — it will not be shown again.
+          </p>
+          <div className="flex items-center gap-3">
+            <code className="flex-1 text-xs bg-white px-3 py-2 rounded border border-amber-200 break-all">
+              {newKey}
+            </code>
+            <button
+              onClick={() => handleCopy(newKey, "new")}
+              className="px-3 py-2 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-700"
+            >
+              {copiedId === "new" ? "Copied!" : "Copy"}
+            </button>
+            <button
+              onClick={() => setNewKey(null)}
+              className="px-3 py-2 bg-white text-gray-700 text-sm rounded-lg border border-gray-200"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Create key form */}
       {showCreate && (
@@ -119,7 +148,7 @@ export default function ApiKeysPage() {
                   <td className="px-5 py-3 font-medium text-gray-900">{k.name}</td>
                   <td className="px-5 py-3">
                     <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">
-                      {k.key.slice(0, 16)}…
+                      {k.key_prefix}…
                     </code>
                   </td>
                   <td className="px-5 py-3">
@@ -130,16 +159,6 @@ export default function ApiKeysPage() {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleCopy(k.key, k.id)}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                        title="Copy key"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      {copiedId === k.id && (
-                        <span className="text-xs text-green-600">Copied!</span>
-                      )}
                       <button
                         onClick={() => handleRevoke(k.id)}
                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"

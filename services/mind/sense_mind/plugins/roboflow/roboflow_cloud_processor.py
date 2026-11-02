@@ -9,12 +9,12 @@ import av
 import numpy as np
 import supervision as sv
 from inference_sdk import InferenceConfiguration, InferenceHTTPClient
-from vision_agents.core import Agent
-from vision_agents.core.events import EventManager
-from vision_agents.core.processors.base_processor import VideoProcessorPublisher
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_track import QueuedVideoTrack
-from vision_agents.plugins.roboflow.events import (
+from sense_mind.core import Agent
+from sense_mind.core.events import EventManager
+from sense_mind.core.processors.base_processor import VideoProcessorPublisher
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_track import QueuedVideoTrack
+from sense_mind.plugins.roboflow.events import (
     DetectedObject,
     DetectionCompletedEvent,
 )
@@ -34,8 +34,8 @@ class RoboflowCloudDetectionProcessor(VideoProcessorPublisher):
     Example usage:
 
         ```
-        from vision_agents.core import Agent
-        from vision_agents.plugins import roboflow
+        from sense_mind.core import Agent
+        from sense_mind.plugins import roboflow
 
         processor = roboflow.RoboflowCloudDetectionProcessor(...)
 
@@ -80,8 +80,8 @@ class RoboflowCloudDetectionProcessor(VideoProcessorPublisher):
         Example usage:
 
         ```
-        from vision_agents.core import Agent
-        from vision_agents.plugins import roboflow
+        from sense_mind.core import Agent
+        from sense_mind.plugins import roboflow
 
         processor = roboflow.RoboflowCloudDetectionProcessor(...)
 

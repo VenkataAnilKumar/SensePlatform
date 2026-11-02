@@ -4,7 +4,7 @@ TransformersDetectionProcessor - Local object detection via HuggingFace Transfor
 Runs detection models (e.g. RT-DETRv2) directly on your hardware.
 
 Example:
-    from vision_agents.plugins import huggingface
+    from sense_mind.plugins import huggingface
 
     processor = huggingface.TransformersDetectionProcessor(
         model="PekingU/rtdetr_v2_r101vd",
@@ -30,12 +30,12 @@ import numpy as np
 import supervision as sv
 import torch
 from PIL import Image
-from vision_agents.core import Agent
-from vision_agents.core.events import EventManager
-from vision_agents.core.processors.base_processor import VideoProcessorPublisher
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_track import QueuedVideoTrack
-from vision_agents.core.warmup import Warmable
+from sense_mind.core import Agent
+from sense_mind.core.events import EventManager
+from sense_mind.core.processors.base_processor import VideoProcessorPublisher
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_track import QueuedVideoTrack
+from sense_mind.core.warmup import Warmable
 
 from .annotation import annotate_image
 from .events import DetectedObject, DetectionCompletedEvent

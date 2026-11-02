@@ -8,7 +8,7 @@ from typing import Any, Optional, cast
 
 import av
 from aiortc.mediastreams import MediaStreamTrack, VideoStreamTrack
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.edge.types import Participant
 from google.genai import types
 from google.genai.client import AsyncClient, Client
 from google.genai.types import (
@@ -18,8 +18,8 @@ from google.genai.types import (
     ThinkingConfig,
     ThinkingLevel,
 )
-from vision_agents.core.instructions import Instructions
-from vision_agents.core.llm.events import (
+from sense_mind.core.instructions import Instructions
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
@@ -27,9 +27,9 @@ from vision_agents.core.llm.events import (
     VLMInferenceCompletedEvent,
     VLMInferenceStartEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent, VideoLLM
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_utils import frame_to_jpeg_bytes
+from sense_mind.core.llm.llm import LLMResponseEvent, VideoLLM
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_utils import frame_to_jpeg_bytes
 
 from . import events
 
@@ -47,7 +47,7 @@ class GeminiVLM(VideoLLM):
     that support multimodal inputs.
 
     Examples:
-        from vision_agents.plugins import gemini
+        from sense_mind.plugins import gemini
 
         vlm = gemini.VLM(model="gemini-3-flash-preview")
         response = await vlm.simple_response("Describe what you see.")

@@ -5,7 +5,7 @@ events from LLM, STT, TTS, turn detection, and realtime components and records t
 corresponding metrics.
 
 Usage:
-    from vision_agents.core.observability import MetricsCollector
+    from sense_mind.core.observability import MetricsCollector
 
     agent = Agent(llm=OpenAILLM(), stt=DeepgramSTT(), tts=CartesiaTTS())
     collector = MetricsCollector(agent)
@@ -20,8 +20,8 @@ import time
 from typing import TYPE_CHECKING, Dict
 
 # Import event types at module level so they can be resolved by typing.get_type_hints()
-from vision_agents.core.events import PluginBaseEvent, VideoProcessorDetectionEvent
-from vision_agents.core.llm.events import (
+from sense_mind.core.events import PluginBaseEvent, VideoProcessorDetectionEvent
+from sense_mind.core.llm.events import (
     LLMErrorEvent,
     LLMResponseCompletedEvent,
     RealtimeAgentSpeechTranscriptionEvent,
@@ -36,14 +36,14 @@ from vision_agents.core.llm.events import (
     VLMErrorEvent,
     VLMInferenceCompletedEvent,
 )
-from vision_agents.core.stt.events import STTErrorEvent, STTTranscriptEvent
-from vision_agents.core.tts.events import TTSErrorEvent, TTSSynthesisCompleteEvent
-from vision_agents.core.turn_detection.events import TurnEndedEvent
+from sense_mind.core.stt.events import STTErrorEvent, STTTranscriptEvent
+from sense_mind.core.tts.events import TTSErrorEvent, TTSSynthesisCompleteEvent
+from sense_mind.core.turn_detection.events import TurnEndedEvent
 
 from . import metrics
 
 if TYPE_CHECKING:
-    from vision_agents.core.agents import Agent
+    from sense_mind.core.agents import Agent
 
 logger = logging.getLogger(__name__)
 

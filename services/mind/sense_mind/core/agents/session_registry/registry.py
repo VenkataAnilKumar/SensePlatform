@@ -4,7 +4,7 @@ import time
 from typing import Self
 from uuid import uuid4
 
-from vision_agents.core.observability.agent import AgentMetrics
+from sense_mind.core.observability.agent import AgentMetrics
 
 from .in_memory_store import InMemorySessionKVStore
 from .store import SessionKVStore

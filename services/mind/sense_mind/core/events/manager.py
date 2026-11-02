@@ -64,10 +64,10 @@ class EventManager:
 
     Example:
         ```python
-        from vision_agents.core.events.manager import EventManager
-        from vision_agents.core.vad.events import VADSpeechStartEvent, VADSpeechEndEvent
-        from vision_agents.core.stt.events import STTTranscriptEvent
-        from vision_agents.core.tts.events import TTSAudioEvent
+        from sense_mind.core.events.manager import EventManager
+        from sense_mind.core.vad.events import VADSpeechStartEvent, VADSpeechEndEvent
+        from sense_mind.core.stt.events import STTTranscriptEvent
+        from sense_mind.core.tts.events import TTSAudioEvent
 
         # Create event manager
         manager = EventManager()
@@ -156,8 +156,8 @@ class EventManager:
 
         Example:
             ```python
-            from vision_agents.core.vad.events import VADSpeechStartEvent
-            from vision_agents.core.stt.events import STTTranscriptEvent
+            from sense_mind.core.vad.events import VADSpeechStartEvent
+            from sense_mind.core.stt.events import STTTranscriptEvent
 
             manager = EventManager()
             manager.register(VADSpeechStartEvent, STTTranscriptEvent)
@@ -221,15 +221,15 @@ class EventManager:
         Example:
             ```python
             # Register all VAD events from the core module
-            from vision_agents.core import vad
+            from sense_mind.core import vad
             manager.register_events_from_module(vad.events, prefix="plugin.vad")
 
             # Register all TTS events from the core module
-            from vision_agents.core import tts
+            from sense_mind.core import tts
             manager.register_events_from_module(tts.events, prefix="plugin.tts")
 
             # Register all events from a plugin module
-            from vision_agents.plugins.silero import events as silero_events
+            from sense_mind.plugins.silero import events as silero_events
             manager.register_events_from_module(silero_events, prefix="plugin.silero")
             ```
 

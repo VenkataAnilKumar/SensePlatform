@@ -86,6 +86,7 @@ def create_app() -> FastAPI:
     app.include_router(channels.router)
     app.include_router(messages.router)
     app.include_router(events.router)
+    app.include_router(events.internal_router)
 
     # ── WebSocket endpoint ────────────────────────────────────────────────────
     @app.websocket("/ws/connect")

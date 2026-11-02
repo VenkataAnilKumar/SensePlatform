@@ -5,11 +5,11 @@ POST /agents/stop   — stop a running agent
 GET  /agents/status — get agent status in a room
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from sense_gate.deps import TenantDep
-from sense_gate.services.agent_service import get_agent_service
+from sense_gate.services.agent_service import AgentServiceError, get_agent_service
 
 router = APIRouter(prefix="/agents", tags=["Agents"])
 
@@ -23,6 +23,19 @@ class StartAgentRequest(BaseModel):
 
 class StopAgentRequest(BaseModel):
     room_id: str
+
+
+class LensConfigRequest(BaseModel):
+    throttle_seconds: float | None = None
+    enabled: bool | None = None
+
+
+async def _call(coro):
+    """Run an AgentService call and translate Mind errors to HTTP errors."""
+    try:
+        return await coro
+    except AgentServiceError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
 class AgentStatusResponse(BaseModel):
@@ -46,14 +59,14 @@ async def start_agent(body: StartAgentRequest, tenant: TenantDep):
     **Auth**: Requires a valid API key (X-API-Key header).
     """
     service = get_agent_service()
-    result = await service.start_agent(
+    return await _call(service.start_agent(
         tenant_slug=tenant.slug,
         room_id=body.room_id,
         instructions=body.instructions,
         lenses=body.lenses,
         llm=body.llm,
-    )
-    return result
+        tenant_id=str(tenant.id),
+    ))
 
 
 @router.post("/stop")
@@ -64,8 +77,7 @@ async def stop_agent(body: StopAgentRequest, tenant: TenantDep):
     **Auth**: Requires a valid API key (X-API-Key header).
     """
     service = get_agent_service()
-    result = await service.stop_agent(tenant_slug=tenant.slug, room_id=body.room_id)
-    return result
+    return await _call(service.stop_agent(tenant_slug=tenant.slug, room_id=body.room_id))
 
 
 @router.get("/status")
@@ -76,5 +88,26 @@ async def get_agent_status(room_id: str, tenant: TenantDep):
     **Auth**: Requires a valid API key (X-API-Key header).
     """
     service = get_agent_service()
-    result = await service.get_agent_status(tenant_slug=tenant.slug, room_id=room_id)
-    return result
+    return await _call(service.get_agent_status(tenant_slug=tenant.slug, room_id=room_id))
+
+
+@router.get("/lenses")
+async def get_agent_lenses(room_id: str, tenant: TenantDep):
+    """List the vision lenses attached to the agent in a room."""
+    service = get_agent_service()
+    return await _call(service.get_lenses(tenant_slug=tenant.slug, room_id=room_id))
+
+
+@router.post("/lenses/{lens_name}/configure")
+async def configure_agent_lens(
+    lens_name: str, room_id: str, body: LensConfigRequest, tenant: TenantDep
+):
+    """Change a lens's throttle or enabled state at runtime."""
+    service = get_agent_service()
+    return await _call(service.configure_lens(
+        tenant_slug=tenant.slug,
+        room_id=room_id,
+        lens_name=lens_name,
+        throttle_seconds=body.throttle_seconds,
+        enabled=body.enabled,
+    ))

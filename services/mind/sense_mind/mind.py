@@ -25,7 +25,8 @@ from pathlib import Path
 from typing import Optional
 
 from sense_mind.core.agents.agents import Agent
-from sense_mind.core.agents.agent_types import User
+from sense_mind.core.edge.types import User
+from sense_mind.lenses.base_lens import BaseLens
 from sense_mind.transport.relay_transport import RelayTransport
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,10 @@ class SenseMind(Agent):
             api_secret=relay_secret,
         )
 
+        if isinstance(instructions, Path):
+            instructions = instructions.read_text()
+        self._lens_context: dict[str, str] = {}
+
         super().__init__(
             edge=transport,
             agent_user=User(id=agent_id, name=agent_name),
@@ -81,23 +86,45 @@ class SenseMind(Agent):
             llm=llm,
             stt=stt,
             tts=tts,
+            processors=list(lenses or []),
         )
 
-        # Attach lenses (vision processors) if provided
-        if lenses:
-            for lens in lenses:
-                self.add_processor(lens)
+        self._base_instructions = self.instructions.full_reference
+
+        # Lenses are VideoProcessors: the agent feeds them frames. We listen to
+        # their events to keep the LLM's context current.
+        for lens in self.lenses:
+            lens.on_event(self._on_lens_event)
 
         logger.info(
             "SenseMind initialized | relay=%s | llm=%s | lenses=%d",
             relay_url,
             type(llm).__name__,
-            len(lenses) if lenses else 0,
+            len(self.lenses),
         )
+
+    @property
+    def lenses(self) -> list:
+        """The vision lenses attached to this agent."""
+        return [p for p in self.processors if isinstance(p, BaseLens)]
 
     def add_processor(self, lens):
         """Attach a Lens (vision processor) to this agent."""
-        if hasattr(self, '_processors'):
-            self._processors.append(lens)
-        else:
-            self._processors = [lens]
+        self.processors.append(lens)
+        if isinstance(lens, BaseLens):
+            lens.on_event(self._on_lens_event)
+        lens.attach_agent(self)
+
+    def _on_lens_event(self, event) -> None:
+        """Inject the latest lens observation into the LLM's system context."""
+        if not event.context_text:
+            return
+        self._lens_context[event.lens_name] = event.context_text
+        live = "\n".join(f"- {text}" for text in self._lens_context.values())
+        try:
+            self.llm.set_instructions(
+                f"{self._base_instructions}\n\n## Live vision context\n"
+                f"Use these real-time observations to adapt your response:\n{live}"
+            )
+        except Exception as exc:
+            logger.debug("Could not update LLM context from lens event: %s", exc)

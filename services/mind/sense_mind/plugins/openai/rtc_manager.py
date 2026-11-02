@@ -11,8 +11,8 @@ from aiortc import (
     RTCSessionDescription,
 )
 from aiortc.mediastreams import MediaStreamTrack
-from getstream.video.rtc.audio_track import AudioStreamTrack
-from getstream.video.rtc.track_util import PcmData
+from sense_mind.core.utils.pcm import AudioStreamTrack
+from sense_mind.core.utils.pcm import PcmData
 from openai import AsyncOpenAI
 from openai.types.beta.realtime import (
     ConversationItem,
@@ -20,9 +20,9 @@ from openai.types.beta.realtime import (
     ConversationItemCreateEvent,
 )
 from openai.types.realtime import RealtimeSessionCreateRequestParam
-from vision_agents.core.utils.audio_forwarder import AudioForwarder
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_track import QueuedVideoTrack
+from sense_mind.core.utils.audio_forwarder import AudioForwarder
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_track import QueuedVideoTrack
 
 logger = logging.getLogger(__name__)
 

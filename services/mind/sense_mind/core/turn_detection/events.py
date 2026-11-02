@@ -3,8 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.events.base import PluginBaseEvent
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.events.base import PluginBaseEvent
 
 
 @dataclass

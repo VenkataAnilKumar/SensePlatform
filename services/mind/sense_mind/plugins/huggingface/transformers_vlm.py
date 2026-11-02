@@ -4,7 +4,7 @@ TransformersVLM - Local vision-language model inference via HuggingFace Transfor
 Runs VLMs directly on your hardware for image + text understanding.
 
 Example:
-    from vision_agents.plugins.huggingface import TransformersVLM
+    from sense_mind.plugins.huggingface import TransformersVLM
 
     vlm = TransformersVLM(model="llava-hf/llava-1.5-7b-hf")
 
@@ -27,16 +27,16 @@ import av
 import torch
 from aiortc.mediastreams import MediaStreamTrack, VideoStreamTrack
 from transformers import AutoModelForImageTextToText, AutoProcessor, PreTrainedModel
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseCompletedEvent,
     VLMErrorEvent,
     VLMInferenceCompletedEvent,
     VLMInferenceStartEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent, VideoLLM
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.warmup import Warmable
+from sense_mind.core.llm.llm import LLMResponseEvent, VideoLLM
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.warmup import Warmable
 
 from . import events
 from .transformers_llm import (

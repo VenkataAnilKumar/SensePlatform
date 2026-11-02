@@ -1,13 +1,13 @@
-from vision_agents.core.agents import Agent
-from vision_agents.core.agents.agent_launcher import AgentLauncher, AgentSession
-from vision_agents.core.agents.session_registry import (
+from sense_mind.core.agents import Agent
+from sense_mind.core.agents.agent_launcher import AgentLauncher, AgentSession
+from sense_mind.core.agents.session_registry import (
     InMemorySessionKVStore,
     SessionInfo,
     SessionKVStore,
     SessionRegistry,
 )
-from vision_agents.core.edge.types import User
-from vision_agents.core.runner import Runner, ServeOptions
+from sense_mind.core.edge.types import User
+from sense_mind.core.runner import Runner, ServeOptions
 
 __all__ = [
     "Agent",
@@ -23,7 +23,7 @@ __all__ = [
 ]
 
 try:
-    from vision_agents.core.agents.session_registry import RedisSessionKVStore
+    from sense_mind.core.agents.session_registry import RedisSessionKVStore
 
     __all__ += ["RedisSessionKVStore"]
 except ImportError as e:

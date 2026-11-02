@@ -9,10 +9,10 @@ from typing import AsyncIterator, Optional, cast
 
 import av
 from aiortc.mediastreams import MediaStreamTrack, VideoStreamTrack
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.edge.types import Participant
 from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
@@ -20,9 +20,9 @@ from vision_agents.core.llm.events import (
     VLMInferenceCompletedEvent,
     VLMErrorEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent, VideoLLM
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_utils import frame_to_jpeg_bytes
+from sense_mind.core.llm.llm import LLMResponseEvent, VideoLLM
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_utils import frame_to_jpeg_bytes
 
 from .. import events
 
@@ -48,7 +48,7 @@ class ChatCompletionsVLM(VideoLLM):
 
     Examples:
 
-        from vision_agents.plugins import openai
+        from sense_mind.plugins import openai
         llm = openai.ChatCompletionsVLM(model="qwen-3-vl-32b")
 
     """

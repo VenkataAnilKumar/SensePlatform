@@ -1,5 +1,5 @@
 """
-Roboflow plugin for vision-agents.
+Roboflow plugin for Sense Mind.
 
 Provides object detection using Roboflow's hosted inference API.
 """

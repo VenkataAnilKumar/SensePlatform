@@ -11,8 +11,8 @@ import av.frame
 from aiortc import VideoStreamTrack
 from av import VideoFrame
 from PIL import Image
-from vision_agents.core.utils.video_queue import VideoLatestNQueue
-from vision_agents.core.utils.video_utils import ensure_even_dimensions
+from sense_mind.core.utils.video_queue import VideoLatestNQueue
+from sense_mind.core.utils.video_utils import ensure_even_dimensions
 
 logger = logging.getLogger(__name__)
 

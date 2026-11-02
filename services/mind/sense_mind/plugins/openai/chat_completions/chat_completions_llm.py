@@ -3,17 +3,17 @@ import logging
 import time
 from typing import Any, Dict, List, Optional, cast
 
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
+from sense_mind.core.edge.types import Participant
 from openai import AsyncOpenAI, AsyncStream
 from openai.types.chat import ChatCompletion
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMRequestStartedEvent,
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLM, LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.core.llm.llm import LLM, LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
 
 from .. import events
 
@@ -35,7 +35,7 @@ class ChatCompletionsLLM(LLM):
 
     Examples:
 
-        from vision_agents.plugins import openai
+        from sense_mind.plugins import openai
         llm = openai.ChatCompletionsLLM(model="deepseek-ai/DeepSeek-V3.1")
 
     """

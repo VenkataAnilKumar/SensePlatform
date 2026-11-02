@@ -53,6 +53,7 @@ class GuardLens(BaseLens):
 
     name: str = "guard_lens"
     throttle_seconds: float = 2.0
+    sample_fps: float = 2.0
 
     # Unsafe object class names from COCO dataset
     UNSAFE_COCO_CLASSES = {"knife", "scissors", "gun", "pistol", "rifle", "baseball bat"}
@@ -136,7 +137,7 @@ class GuardLens(BaseLens):
                     confidence=1.0,
                     context_text=self._build_context(violations, severity, action),
                 )
-                self._emit(event)
+                self._emit(event, force=True)  # violations bypass the throttle
                 return event
 
             if is_safe:

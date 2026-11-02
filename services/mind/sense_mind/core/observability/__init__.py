@@ -4,7 +4,7 @@ This package provides observability tools including metrics collection for Strea
 
 Usage:
     # Configure OpenTelemetry in your application first, then:
-    from vision_agents.core.observability import MetricsCollector
+    from sense_mind.core.observability import MetricsCollector
 
     agent = Agent(llm=OpenAILLM(), stt=DeepgramSTT(), tts=CartesiaTTS())
     collector = MetricsCollector(agent)  # Opt-in to metrics collection

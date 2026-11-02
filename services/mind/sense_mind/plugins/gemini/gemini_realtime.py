@@ -10,7 +10,7 @@ import aiortc
 import av
 import websockets
 from aiortc import VideoStreamTrack
-from getstream.video.rtc.track_util import PcmData
+from sense_mind.core.utils.pcm import PcmData
 from google import genai
 from google.genai.live import AsyncSession
 from google.genai.types import (
@@ -34,15 +34,15 @@ from google.genai.types import (
     TurnCoverage,
     VoiceConfigDict,
 )
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.llm import realtime
-from vision_agents.core.llm.events import (
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm import realtime
+from sense_mind.core.llm.events import (
     LLMResponseChunkEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent
-from vision_agents.core.llm.llm_types import ToolSchema
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_utils import frame_to_png_bytes
+from sense_mind.core.llm.llm import LLMResponseEvent
+from sense_mind.core.llm.llm_types import ToolSchema
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_utils import frame_to_png_bytes
 
 from .file_search import FileSearchStore
 

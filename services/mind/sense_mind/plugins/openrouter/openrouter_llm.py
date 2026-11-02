@@ -17,13 +17,13 @@ from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
 from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
 )
-from vision_agents.core.llm.events import (
+from sense_mind.core.llm.events import (
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent
-from vision_agents.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
-from vision_agents.plugins.openai import LLM as OpenAILLM
+from sense_mind.core.llm.llm import LLMResponseEvent
+from sense_mind.core.llm.llm_types import NormalizedToolCallItem, ToolSchema
+from sense_mind.plugins.openai import LLM as OpenAILLM
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ class OpenRouterLLM(OpenAILLM):
         self, *args: Any, **kwargs: Any
     ) -> LLMResponseEvent:
         """Create response using Chat Completions API."""
-        from vision_agents.core.agents.conversation import Message
+        from sense_mind.core.agents.conversation import Message
 
         # Get the user input
         user_input = kwargs.get("input", args[0] if args else "Hello")

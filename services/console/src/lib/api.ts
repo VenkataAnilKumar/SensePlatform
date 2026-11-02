@@ -52,15 +52,20 @@ export const tenantsApi = {
 
 export interface ApiKey {
   id: string;
-  key: string;
+  key_prefix: string;
   name: string;
   is_test: boolean;
+}
+
+/** Returned once, at creation — the raw key is never retrievable again. */
+export interface CreatedApiKey extends ApiKey {
+  key: string;
 }
 
 export const apiKeysApi = {
   list: () => request<ApiKey[]>("/tenants/me/api-keys"),
   create: (name: string, test = false) =>
-    request<ApiKey>("/tenants/me/api-keys", {
+    request<CreatedApiKey>("/tenants/me/api-keys", {
       method: "POST",
       body: JSON.stringify({ name, test }),
     }),

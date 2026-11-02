@@ -2,7 +2,7 @@ import typing
 from dataclasses import dataclass, field
 
 import supervision as sv
-from vision_agents.core.events import VideoProcessorDetectionEvent
+from sense_mind.core.events import VideoProcessorDetectionEvent
 
 
 class DetectedObject(typing.TypedDict):

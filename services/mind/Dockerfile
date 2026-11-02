@@ -19,25 +19,23 @@ WORKDIR /app
 # Install Python dependencies
 # ─────────────────────────────────────────────────────────────────────────────
 COPY pyproject.toml ./
-
-# Install core deps (no vision lenses by default — add [vision] for YOLO)
-RUN pip install --no-cache-dir -e ".[anthropic,deepgram,elevenlabs]"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Copy application source
-# ─────────────────────────────────────────────────────────────────────────────
 COPY sense_mind/ ./sense_mind/
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Default startup — runs the basic contact center agent example
-# Override CMD or mount your own agent at /app/agent.py
-# ─────────────────────────────────────────────────────────────────────────────
-COPY examples/ ./examples/
+# CPU-only PyTorch keeps the image small; the lenses (YOLO) need it.
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
+# Core deps + vision lenses (ultralytics) + default LLM/STT/TTS plugins
+RUN pip install --no-cache-dir ".[vision,anthropic,deepgram,elevenlabs]"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Default startup — pool mode: agents are started per room via the REST API
+# (POST /agents/start). Mount your own agent script and override CMD to run a
+# single custom agent instead (see examples/).
+# ─────────────────────────────────────────────────────────────────────────────
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     SENSE_MIND_PORT=8080
 
 EXPOSE 8080
 
-CMD ["python", "examples/contact_center/agent.py"]
+CMD ["python", "-c", "from sense_mind import SenseRunner; SenseRunner().serve()"]

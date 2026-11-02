@@ -43,7 +43,17 @@ dependencies = [
     "pillow>=10.3.0",
 
     # MCP support
-    "mcp>=1.0.0",
+    "mcp>=1.0.0,<2",
+
+    # Audio / video primitives
+    "av>=12.0.0",
+    "onnxruntime>=1.17.0",       # Silero VAD
+
+    # Events / logging / tracing
+    "dataclasses-json>=0.6.0",
+    "colorlog>=6.8.0",
+    "opentelemetry-api>=1.24.0",
+    "opentelemetry-sdk>=1.24.0",
 
     # Utilities
     "python-dotenv>=1.0.0",

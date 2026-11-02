@@ -11,7 +11,7 @@ from .events import (
     TTSSynthesisCompleteEvent,
 )
 
-from getstream.video.rtc import PcmData
+from sense_mind.core.utils.pcm import PcmData
 
 
 @dataclass

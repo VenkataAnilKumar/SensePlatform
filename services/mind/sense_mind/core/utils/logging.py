@@ -14,7 +14,7 @@ _ORIGINAL_FACTORY = logging.getLogRecordFactory()
 _CALL_ID_ENABLED = True
 
 
-MAIN_LOGGER = logging.getLogger("vision_agents")
+MAIN_LOGGER = logging.getLogger("sense_mind")
 
 
 def _get_colored_formatter(
@@ -35,7 +35,7 @@ def _get_colored_formatter(
 
 def configure_sdk_logger(level: int) -> None:
     """
-    Sets the default configuration for "vision_agents" logger to have a nice formatting
+    Sets the default configuration for "sense_mind" logger to have a nice formatting
     if it's not already configured.
     """
 

@@ -27,7 +27,7 @@ class RedisSessionKVStore(SessionKVStore):
         *,
         client: redis.Redis | None = None,
         url: str | None = None,
-        key_prefix: str = "vision_agents:",
+        key_prefix: str = "sense_mind:",
     ) -> None:
         if client is not None and url is not None:
             raise ValueError("Provide either a Redis client or a URL, not both")

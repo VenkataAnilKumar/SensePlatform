@@ -13,8 +13,8 @@ from deepgram.speak.v1.types import (
     SpeakV1Text,
     SpeakV1Warning,
 )
-from getstream.video.rtc.track_util import AudioFormat, PcmData
-from vision_agents.core import tts
+from sense_mind.core.utils.pcm import AudioFormat, PcmData
+from sense_mind.core import tts
 
 logger = logging.getLogger(__name__)
 

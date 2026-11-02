@@ -7,18 +7,18 @@ from typing import Any, Optional
 
 import numpy as np
 import onnxruntime as ort
-from getstream.video.rtc.track_util import AudioFormat, PcmData
+from sense_mind.core.utils.pcm import AudioFormat, PcmData
 from transformers import WhisperFeatureExtractor
-from vision_agents.core.agents import Conversation
-from vision_agents.core.agents.agent_types import AgentOptions, default_agent_options
-from vision_agents.core.edge.types import Participant
-from vision_agents.core.turn_detection import (
+from sense_mind.core.agents import Conversation
+from sense_mind.core.agents.agent_types import AgentOptions, default_agent_options
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.turn_detection import (
     TurnDetector,
     TurnStartedEvent,
 )
-from vision_agents.core.utils.utils import ensure_model
-from vision_agents.core.vad.silero import SileroVADSession, SileroVADSessionPool
-from vision_agents.core.warmup import Warmable
+from sense_mind.core.utils.utils import ensure_model
+from sense_mind.core.vad.silero import SileroVADSession, SileroVADSessionPool
+from sense_mind.core.warmup import Warmable
 
 logger = logging.getLogger(__name__)
 

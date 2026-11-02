@@ -3,7 +3,7 @@
 import warnings
 
 import numpy as np
-from getstream.video.rtc.track_util import PcmData, AudioFormat
+from sense_mind.core.utils.pcm import PcmData, AudioFormat
 
 TWILIO_SAMPLE_RATE = 8000  # Twilio streams mulaw at 8kHz
 

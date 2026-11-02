@@ -5,6 +5,7 @@ Sliding window rate limiter keyed by API key or IP address.
 
 import logging
 import time
+import uuid
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -24,17 +25,20 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app, redis_client=None):
         super().__init__(app)
-        self._redis = redis_client
+        self._redis = redis_client  # optional fixed client (tests); else app.state.redis
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        if self._redis is None:
+        # Redis is connected during app startup, after middleware is constructed,
+        # so resolve it per request.
+        redis = self._redis or getattr(request.app.state, "redis", None)
+        if redis is None or request.url.path in ("/health", "/"):
             return await call_next(request)
 
         # Key by API key header or remote IP
         key_raw = (
             request.headers.get("X-API-Key")
             or request.headers.get("Authorization", "")
-            or request.client.host
+            or (request.client.host if request.client else "unknown")
         )
         # Truncate long keys
         rate_key = f"rate:{key_raw[:64]}"
@@ -43,9 +47,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         try:
             now = time.time()
-            pipe = self._redis.pipeline()
+            member = f"{now}:{uuid.uuid4().hex[:8]}"  # unique even within the same instant
+            pipe = redis.pipeline()
             pipe.zremrangebyscore(rate_key, 0, now - window)
-            pipe.zadd(rate_key, {str(now): now})
+            pipe.zadd(rate_key, {member: now})
             pipe.zcard(rate_key)
             pipe.expire(rate_key, window)
             results = await pipe.execute()

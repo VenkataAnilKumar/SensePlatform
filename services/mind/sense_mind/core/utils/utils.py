@@ -19,28 +19,28 @@ P = ParamSpec("P")
 MarkdownFileContents = Dict[str, str]
 
 # Cache version at module load time to avoid blocking I/O during async operations
-_VISION_AGENTS_VERSION: str | None = None
+_SENSE_MIND_VERSION: str | None = None
 
 
 def _load_version() -> str:
     """Load version once at module import time."""
     try:
-        return importlib.metadata.version("vision-agents")
+        return importlib.metadata.version("sense-mind")
     except importlib.metadata.PackageNotFoundError:
         return "unknown"
 
 
-_VISION_AGENTS_VERSION = _load_version()
+_SENSE_MIND_VERSION = _load_version()
 
 
-def get_vision_agents_version() -> Optional[str]:
+def get_sense_mind_version() -> Optional[str]:
     """
-    Get the installed vision-agents package version.
+    Get the installed sense-mind package version.
 
     Returns:
         Version string, or "unknown" if not available.
     """
-    return _VISION_AGENTS_VERSION or "unknown"
+    return _SENSE_MIND_VERSION or "unknown"
 
 
 async def ensure_model(path: str, url: str) -> str:

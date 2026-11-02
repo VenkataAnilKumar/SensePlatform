@@ -3,8 +3,8 @@ import logging
 import uuid
 from typing import Optional
 
-from getstream.video.rtc.track_util import PcmData
-from vision_agents.core.events.manager import EventManager
+from sense_mind.core.utils.pcm import PcmData
+from sense_mind.core.events.manager import EventManager
 
 from ..edge.types import Participant
 from ..turn_detection import TurnEndedEvent, TurnStartedEvent

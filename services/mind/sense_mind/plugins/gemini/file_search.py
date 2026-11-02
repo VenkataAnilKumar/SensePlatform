@@ -17,7 +17,7 @@ from google.genai.types import (
     CreateFileSearchStoreConfig,
     GenerateContentConfig,
 )
-from vision_agents.core.rag import RAG, Document
+from sense_mind.core.rag import RAG, Document
 
 logger = logging.getLogger(__name__)
 

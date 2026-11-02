@@ -7,7 +7,7 @@ from types import FunctionType
 from typing import Any, Optional
 
 from dataclasses_json import DataClassJsonMixin
-from vision_agents.core.edge.types import Participant
+from sense_mind.core.edge.types import Participant
 
 
 class ConnectionState(Enum):

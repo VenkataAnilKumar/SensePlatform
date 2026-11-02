@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     jwt_secret: str = "sense_jwt_secret_change_in_production"
     jwt_algorithm: str = "HS256"
 
+    # Shared secret for trusted internal callers (Sense Mind's LensEventBridge).
+    # Empty disables the internal endpoint.
+    service_key: str = ""
+
     # Message limits
     max_message_length: int = 5000
     max_attachments: int = 10

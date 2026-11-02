@@ -42,7 +42,7 @@ async def get_tenant_from_api_key(
 
     result = await db.execute(
         select(ApiKey)
-        .where(ApiKey.key == raw_key, ApiKey.is_active == True)  # noqa: E712
+        .where(ApiKey.key_hash == ApiKey.hash_key(raw_key), ApiKey.is_active == True)  # noqa: E712
         .join(Tenant)
         .where(Tenant.is_active == True)  # noqa: E712
     )

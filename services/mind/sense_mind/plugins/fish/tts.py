@@ -3,8 +3,8 @@ import os
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional
 
 from fish_audio_sdk import Session, TTSRequest
-from vision_agents.core import tts
-from getstream.video.rtc.track_util import PcmData, AudioFormat
+from sense_mind.core import tts
+from sense_mind.core.utils.pcm import PcmData, AudioFormat
 
 if TYPE_CHECKING:
     from fish_audio_sdk.schemas import Backends

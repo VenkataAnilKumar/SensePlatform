@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, fields
 from typing import Any, Self
 
-from vision_agents.core.observability.agent import AgentMetrics
+from sense_mind.core.observability.agent import AgentMetrics
 
 
 @dataclass

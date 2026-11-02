@@ -1,5 +1,5 @@
 """
-Ultralytics plugin for vision-agents.
+Ultralytics plugin for Sense Mind.
 
 This plugin provides YOLO-based pose detection capabilities using the Ultralytics YOLO library.
 """

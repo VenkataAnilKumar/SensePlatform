@@ -32,8 +32,14 @@ export class LensStream {
   private _faceHandlers: LensHandler<LensEvent & { data: FaceData }>[] = [];
   private _allHandlers: LensHandler[] = [];
 
-  constructor(private readonly wire: WireClient) {
+  /**
+   * @param wire    Connected WireClient.
+   * @param roomId  Room whose lens events to receive. Subscribes to the
+   *                `lens` channel for that room.
+   */
+  constructor(private readonly wire: WireClient, roomId?: string) {
     this.wire.on("lens.event", (rawEvent) => this._handleLensEvent(rawEvent));
+    if (roomId) this.wire.subscribe("lens", roomId);
   }
 
   /**

@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.responses import Response
-from vision_agents.core import AgentLauncher
-from vision_agents.core.agents.exceptions import (
+from sense_mind.core import AgentLauncher
+from sense_mind.core.agents.exceptions import (
     InvalidCallId,
     MaxConcurrentSessionsExceeded,
     MaxSessionsPerCallExceeded,

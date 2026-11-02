@@ -7,14 +7,14 @@ from typing import Optional, cast
 import aiohttp
 import av
 from aiortc.mediastreams import MediaStreamTrack, VideoStreamTrack
-from getstream.video.rtc.pb.stream.video.sfu.models.models_pb2 import Participant
-from vision_agents.core.llm.events import (
+from sense_mind.core.edge.types import Participant
+from sense_mind.core.llm.events import (
     LLMResponseChunkEvent,
     LLMResponseCompletedEvent,
 )
-from vision_agents.core.llm.llm import LLMResponseEvent, VideoLLM
-from vision_agents.core.utils.video_forwarder import VideoForwarder
-from vision_agents.core.utils.video_utils import frame_to_jpeg_bytes
+from sense_mind.core.llm.llm import LLMResponseEvent, VideoLLM
+from sense_mind.core.utils.video_forwarder import VideoForwarder
+from sense_mind.core.utils.video_utils import frame_to_jpeg_bytes
 
 from . import events
 
@@ -48,7 +48,7 @@ class NvidiaVLM(VideoLLM):
 
     Examples:
 
-        from vision_agents.plugins import nvidia
+        from sense_mind.plugins import nvidia
         vlm = nvidia.VLM(model="nvidia/cosmos-reason2-8b")
 
     """
