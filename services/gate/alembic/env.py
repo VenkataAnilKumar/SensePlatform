@@ -10,10 +10,15 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+from sense_gate.config import get_settings  # noqa: E402
 from sense_gate.database import Base  # noqa: E402
 from sense_gate.models import Tenant, ApiKey, Webhook, UsageRecord  # noqa: E402, F401
 
 target_metadata = Base.metadata
+
+# Use the application's DATABASE_URL (alembic.ini's value is only a local default),
+# so migrations hit the same database as the running service.
+config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))  # configparser escape
 
 
 def run_migrations_offline() -> None:
