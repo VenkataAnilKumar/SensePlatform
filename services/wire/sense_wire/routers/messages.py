@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import select, desc
+from sqlalchemy.orm import selectinload
 
 from sense_wire.deps import DBDep, UserDep
 from sense_wire.models.channel import Channel
@@ -32,6 +33,21 @@ class MessageResponse(BaseModel):
     attachments: list[dict] = []
 
     model_config = {"from_attributes": True}
+
+
+def _to_response(m: Message) -> "MessageResponse":
+    """Serialize a message (reactions/attachments must be eagerly loaded)."""
+    return MessageResponse(
+        id=m.id, channel_id=m.channel_id, user_id=m.user_id, user_name=m.user_name,
+        text=m.text, is_deleted=m.is_deleted, is_pinned=m.is_pinned,
+        parent_id=m.parent_id, reply_count=m.reply_count, created_at=m.created_at,
+        reactions=[{"id": str(r.id), "user_id": r.user_id, "emoji": r.emoji} for r in m.reactions],
+        attachments=[
+            {"id": str(a.id), "file_name": a.file_name, "file_type": a.file_type,
+             "file_size": a.file_size, "url": a.url, "thumbnail_url": a.thumbnail_url}
+            for a in m.attachments
+        ],
+    )
 
 
 class MessagesResponse(BaseModel):
@@ -72,6 +88,7 @@ async def query_messages(
 
     query = (
         select(Message)
+        .options(selectinload(Message.reactions), selectinload(Message.attachments))
         .where(Message.channel_id == channel.id, Message.is_deleted == False)  # noqa: E712
         .order_by(desc(Message.created_at))
         .limit(limit + 1)
@@ -93,7 +110,7 @@ async def query_messages(
     next_cursor = str(messages[-1].id) if has_more and messages else None
 
     return MessagesResponse(
-        messages=messages,
+        messages=[_to_response(m) for m in messages],
         has_more=has_more,
         next_cursor=next_cursor,
     )

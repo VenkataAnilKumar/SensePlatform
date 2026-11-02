@@ -168,6 +168,8 @@ class SenseRunner:
                 llm: str = "claude-sonnet-4-6"
                 agent_id: str = "sense-agent"
                 agent_name: str = "Sense AI"
+                stt: str | None = None         # None = auto from env keys
+                tts: str | None = None
                 tenant_id: str | None = None   # routing for the Vision Event Stream
                 room_id: str | None = None
 
@@ -209,6 +211,8 @@ class SenseRunner:
                     llm=req.llm,
                     agent_id=req.agent_id,
                     agent_name=req.agent_name,
+                    stt=req.stt,
+                    tts=req.tts,
                     tenant_id=req.tenant_id,
                     room_id=req.room_id,
                 )

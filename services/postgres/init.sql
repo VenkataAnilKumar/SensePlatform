@@ -1,8 +1,6 @@
 -- Sense Platform — Postgres initialization
--- Creates all databases needed by Sense Gate and Sense Wire
+-- The compose file creates `sense_gate` via POSTGRES_DB; add the other databases here.
 
-CREATE DATABASE sense_gate;
 CREATE DATABASE sense_wire;
 
-GRANT ALL PRIVILEGES ON DATABASE sense_gate TO sense;
 GRANT ALL PRIVILEGES ON DATABASE sense_wire TO sense;

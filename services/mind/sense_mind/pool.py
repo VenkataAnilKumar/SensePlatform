@@ -60,6 +60,9 @@ class AgentConfig:
     llm: str = "claude-sonnet-4-6"
     agent_id: str = "sense-agent"
     agent_name: str = "Sense AI"
+    # Speech plugins by name; None = auto-detect from environment API keys
+    stt: Optional[str] = None   # "deepgram" | "assemblyai" | "fast_whisper" | "none"
+    tts: Optional[str] = None   # "elevenlabs" | "cartesia" | "kokoro" | "deepgram" | "none"
     # Routing metadata for the Vision Event Stream (set by Sense Gate)
     tenant_id: Optional[str] = None
     room_id: Optional[str] = None
@@ -107,7 +110,11 @@ class AgentPool:
             # Previous task died — remove stale entry and restart
             del self._agents[config.room]
 
-        agent = _build_agent(config)
+        try:
+            agent = _build_agent(config)
+        except Exception as exc:  # missing plugin, bad API key, unknown model...
+            logger.error("AgentPool.start: could not build agent for %s: %r", config.room, exc)
+            return {"status": "failed", "room": config.room, "error": f"{type(exc).__name__}: {exc}"}
 
         # Wire lens event forwarding
         for lens in _lenses_of(agent):
@@ -263,10 +270,46 @@ def _build_agent(config: AgentConfig):
     return SenseMind(
         instructions=config.instructions,
         llm=llm,
+        stt=_resolve_stt(config.stt),
+        tts=_resolve_tts(config.tts),
         lenses=lenses or None,
         agent_id=config.agent_id,
         agent_name=config.agent_name,
     )
+
+
+def _resolve_stt(name: Optional[str]):
+    """Build an STT plugin by name; ``None`` auto-selects from available API keys."""
+    import importlib
+    import os
+
+    if name == "none":
+        return None
+    if name is None:
+        name = "deepgram" if os.environ.get("DEEPGRAM_API_KEY") else (
+            "assemblyai" if os.environ.get("ASSEMBLYAI_API_KEY") else None
+        )
+        if name is None:
+            logger.info("No STT configured (set DEEPGRAM_API_KEY or pass stt=...) — agent cannot hear")
+            return None
+    return importlib.import_module(f"sense_mind.plugins.{name}").STT()
+
+
+def _resolve_tts(name: Optional[str]):
+    """Build a TTS plugin by name; ``None`` auto-selects from available API keys."""
+    import importlib
+    import os
+
+    if name == "none":
+        return None
+    if name is None:
+        name = "elevenlabs" if os.environ.get("ELEVENLABS_API_KEY") else (
+            "cartesia" if os.environ.get("CARTESIA_API_KEY") else None
+        )
+        if name is None:
+            logger.info("No TTS configured (set ELEVENLABS_API_KEY or pass tts=...) — agent cannot speak")
+            return None
+    return importlib.import_module(f"sense_mind.plugins.{name}").TTS()
 
 
 def _resolve_llm(model_name: str):

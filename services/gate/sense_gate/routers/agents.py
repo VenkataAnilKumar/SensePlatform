@@ -19,6 +19,8 @@ class StartAgentRequest(BaseModel):
     instructions: str | None = None
     lenses: list[str] = []
     llm: str = "claude-sonnet-4-6"
+    stt: str | None = None  # e.g. "deepgram"; default: auto-detect from Mind's API keys
+    tts: str | None = None  # e.g. "elevenlabs"
 
 
 class StopAgentRequest(BaseModel):
@@ -66,6 +68,8 @@ async def start_agent(body: StartAgentRequest, tenant: TenantDep):
         lenses=body.lenses,
         llm=body.llm,
         tenant_id=str(tenant.id),
+        stt=body.stt,
+        tts=body.tts,
     ))
 
 

@@ -42,9 +42,10 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     logger.info("Sense Wire starting up...")
 
-    if settings.debug:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+    # Wire has no migration history yet: create any missing tables on startup
+    # (idempotent — existing tables are left untouched).
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
     # Connect Redis pub/sub
     pubsub = get_pubsub()

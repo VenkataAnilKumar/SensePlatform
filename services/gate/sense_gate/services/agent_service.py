@@ -44,6 +44,8 @@ class AgentService:
         lenses: list[str] | None = None,
         llm: str = "claude-sonnet-4-6",
         tenant_id: str | None = None,
+        stt: str | None = None,
+        tts: str | None = None,
     ) -> dict[str, Any]:
         """
         Launch a Sense Mind agent into a tenant room.
@@ -66,6 +68,8 @@ class AgentService:
             # Lets Sense Mind stream lens events to this tenant's Wire channel
             "tenant_id": tenant_id,
             "room_id": room_id,
+            "stt": stt,
+            "tts": tts,
         }
         if instructions:
             payload["instructions"] = instructions
