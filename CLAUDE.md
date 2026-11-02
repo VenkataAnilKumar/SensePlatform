@@ -264,6 +264,8 @@ POST /channels/:type/:id/event  — send custom event
 | `SENSE_RELAY_API_KEY` | `sense_gateway` | Relay API key |
 | `SENSE_RELAY_SECRET` | `secret_change_in_production` | Relay API secret |
 | `SENSE_SERVICE_KEY` | `sense_service_key_change_in_production` | Shared secret: Sense Mind → Sense Wire lens events |
+| `SENSE_ENV` | `development` | `production` refuses default secrets and closes open tenant creation |
+| `SENSE_ADMIN_KEY` | — | Required `X-Admin-Key` for `POST /tenants` in production |
 | `SENSE_ROOM` | `default` | Default room name for agent to join |
 | `ANTHROPIC_API_KEY` | — | Anthropic Claude API key |
 | `OPENAI_API_KEY` | — | OpenAI API key |

@@ -3,6 +3,7 @@ Sense Gate — FastAPI Dependencies
 Reusable dependency injectors for auth, tenant lookup, and DB sessions.
 """
 
+import hmac
 import logging
 from typing import Annotated
 
@@ -12,6 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sense_gate.config import get_settings
 from sense_gate.database import get_db
 from sense_gate.models.tenant import ApiKey, Tenant
 from sense_gate.services.jwt_service import decode_token
@@ -85,6 +87,28 @@ async def get_current_user_from_jwt(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid or expired token: {e}",
+        )
+
+
+async def require_admin(
+    x_admin_key: Annotated[str | None, Header(alias="X-Admin-Key")] = None,
+) -> None:
+    """
+    Guard for operator-only endpoints (tenant creation).
+
+    - ADMIN_API_KEY set  -> the X-Admin-Key header must match it.
+    - unset, development -> open (local quickstart).
+    - unset, production  -> disabled.
+    """
+    settings = get_settings()
+    if settings.admin_api_key:
+        if not x_admin_key or not hmac.compare_digest(x_admin_key, settings.admin_api_key):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin key required")
+        return
+    if settings.is_production:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tenant creation is disabled: set ADMIN_API_KEY",
         )
 
 

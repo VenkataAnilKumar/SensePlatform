@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: "standalone",
   env: {
     NEXT_PUBLIC_GATE_URL: process.env.NEXT_PUBLIC_GATE_URL ?? "http://localhost:3000",

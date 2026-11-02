@@ -5,12 +5,12 @@ CRUD for tenant management + API key issuance.
 
 import uuid
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 
 from sense_gate.database import get_db
-from sense_gate.deps import DBDep, TenantDep
+from sense_gate.deps import DBDep, TenantDep, require_admin
 from sense_gate.models.tenant import ApiKey, Tenant
 
 router = APIRouter(prefix="/tenants", tags=["Tenants"])
@@ -58,7 +58,12 @@ class CreateApiKeyRequest(BaseModel):
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
-@router.post("", response_model=TenantCreatedResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=TenantCreatedResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
 async def create_tenant(body: CreateTenantRequest, db: DBDep):
     """
     Create a new tenant (developer account / product deployment).
@@ -66,7 +71,7 @@ async def create_tenant(body: CreateTenantRequest, db: DBDep):
     Each tenant gets isolated rooms, agents, and channels.
     A default API key is automatically generated.
 
-    **Note**: In production, protect this endpoint behind admin auth.
+    **Auth**: `X-Admin-Key` when `ADMIN_API_KEY` is set (required in production).
     """
     # Check slug uniqueness
     existing = await db.execute(select(Tenant).where(Tenant.slug == body.slug))

@@ -72,6 +72,12 @@ Additional defects found and fixed along the way:
 - The Python SDK called Gate routes that do not exist (`/tenants/keys`, `/webhooks/register`, `/usage/summary`, per-room GET/DELETE). It now matches Gate; Gate gained `GET /agents/lenses` and `POST /agents/lenses/{lens}/configure` proxies.
 - `mcp` is pinned `<2` (2.x renamed the client API used by `core/mcp`), and runtime deps missing from `pyproject.toml` were added.
 
+Hardening and CI (added after the end-to-end run):
+
+- `SENSE_ENV=production`: Gate, Wire and Mind refuse to start with default secrets; `POST /tenants` needs `X-Admin-Key` (`SENSE_ADMIN_KEY`) and is disabled if unset.
+- GitHub Actions (`.github/workflows/ci.yml`): per-service tests, Console build, and a `docker compose` smoke test.
+- Console fixes: removed non-existent `@radix-ui/react-badge`, replaced unsupported `next.config.ts`, added `tsconfig.json`, `postcss.config.js` and `public/`.
+
 Known remaining limitations:
 
 - Publishing agent *video* to Relay is not supported (audio only).

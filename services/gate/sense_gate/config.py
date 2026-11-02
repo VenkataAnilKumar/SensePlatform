@@ -12,6 +12,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    # ── Deployment ────────────────────────────────────────────────────────────
+    # "production" refuses to start with default secrets and disables open tenant creation.
+    environment: str = "development"
+    # Protects POST /tenants (send as X-Admin-Key). Required in production.
+    admin_api_key: str = ""
+
     # ── App ──────────────────────────────────────────────────────────────────
     app_name: str = "Sense Gate"
     version: str = "0.1.0"
@@ -49,6 +55,16 @@ class Settings(BaseSettings):
 
     # ── Sense Mind (agent orchestration) ─────────────────────────────────────
     mind_url: str = "http://localhost:8080"
+
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
+
+    def insecure_defaults(self) -> list[str]:
+        """Names of secrets still set to their shipped default values."""
+        checks = {"JWT_SECRET": self.jwt_secret, "RELAY_API_SECRET": self.relay_api_secret}
+        return [name for name, value in checks.items() if "change_in_production" in value]
 
 
 @lru_cache

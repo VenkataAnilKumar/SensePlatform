@@ -10,6 +10,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    # "production" refuses to start with default secrets.
+    environment: str = "development"
+
     app_name: str = "Sense Wire"
     version: str = "0.1.0"
     debug: bool = False
@@ -40,6 +43,11 @@ class Settings(BaseSettings):
     storage_bucket: str = "sense-wire-attachments"
     storage_access_key: str | None = None
     storage_secret_key: str | None = None
+
+
+    def insecure_defaults(self) -> list[str]:
+        checks = {"JWT_SECRET": self.jwt_secret, "SERVICE_KEY": self.service_key}
+        return [n for n, v in checks.items() if "change_in_production" in v]
 
 
 @lru_cache

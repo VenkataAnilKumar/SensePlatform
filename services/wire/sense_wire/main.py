@@ -41,6 +41,13 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Sense Wire starting up...")
+    insecure = settings.insecure_defaults()
+    if insecure and settings.environment.lower() == "production":
+        raise RuntimeError(
+            "Refusing to start in production with default secrets: " + ", ".join(insecure)
+        )
+    for name in insecure:
+        logger.warning("%s is still the default value — change it before production!", name)
 
     # Wire has no migration history yet: create any missing tables on startup
     # (idempotent — existing tables are left untouched).
