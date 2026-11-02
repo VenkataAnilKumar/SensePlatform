@@ -68,7 +68,7 @@ services:
     volumes:
       - ./services/relay/sense-relay.yaml:/etc/sense-relay/sense-relay.yaml:ro
     environment:
-      - LIVEKIT_KEYS=sense_gateway:${SENSE_RELAY_SECRET:-secret_change_in_production}
+      - "LIVEKIT_KEYS=sense_gateway: ${SENSE_RELAY_SECRET:-secret_change_in_production}"
     depends_on:
       redis:
         condition: service_healthy
