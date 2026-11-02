@@ -90,8 +90,10 @@ services:
       DATABASE_URL: "postgresql+asyncpg://sense:sense@postgres:5432/sense_gate"
       REDIS_URL: "redis://redis:6379/0"
       RELAY_URL: "ws://sense-relay:7880"
+      RELAY_PUBLIC_URL: "${SENSE_PUBLIC_RELAY_URL:-ws://localhost:7880}"   # what browsers connect to
       RELAY_API_KEY: "sense_gateway"
       ADMIN_API_KEY: "${SENSE_ADMIN_KEY:-}"
+      CORS_ORIGINS: "${SENSE_CORS_ORIGINS:-*}"
       RELAY_API_SECRET: "${SENSE_RELAY_SECRET:-secret_change_in_production}"
       MIND_URL: "http://sense-mind:8080"
       JWT_SECRET: "${SENSE_JWT_SECRET:-sense_jwt_secret_change_in_production}"
@@ -189,8 +191,8 @@ services:
       context: ./services/console
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_GATE_URL: "http://localhost:3000"
-        NEXT_PUBLIC_WIRE_URL: "ws://localhost:3001"
+        NEXT_PUBLIC_GATE_URL: "${SENSE_PUBLIC_GATE_URL:-http://localhost:3000}"
+        NEXT_PUBLIC_WIRE_URL: "${SENSE_PUBLIC_WIRE_URL:-ws://localhost:3001}"
     environment:
       NEXT_PUBLIC_GATE_URL: "http://sense-gate:3000"
       NEXT_PUBLIC_WIRE_URL: "ws://sense-wire:3001"

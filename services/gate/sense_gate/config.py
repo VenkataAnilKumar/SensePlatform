@@ -38,6 +38,9 @@ class Settings(BaseSettings):
 
     # ── Sense Relay ───────────────────────────────────────────────────────────
     relay_url: str = "ws://localhost:7880"
+    # URL returned to browsers/apps for WebRTC. Defaults to relay_url, but behind
+    # Docker/a proxy it must be the externally reachable address (e.g. wss://relay.example.com).
+    relay_public_url: str = ""
     relay_api_key: str = "sense_gateway"
     relay_api_secret: str = "secret_change_in_production"
 
@@ -56,6 +59,10 @@ class Settings(BaseSettings):
     # ── Sense Mind (agent orchestration) ─────────────────────────────────────
     mind_url: str = "http://localhost:8080"
 
+
+    @property
+    def relay_client_url(self) -> str:
+        return self.relay_public_url or self.relay_url
 
     @property
     def is_production(self) -> bool:

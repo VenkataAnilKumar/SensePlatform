@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Video, Bot, Key, Webhook, BarChart3,
-  Settings, LogOut, Zap,
+  LogOut, Zap, PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview",  icon: LayoutDashboard },
+  { href: "/demo",      label: "Live Demo", icon: PlayCircle },
   { href: "/rooms",     label: "Rooms",     icon: Video },
   { href: "/agents",    label: "Agents",    icon: Bot },
   { href: "/keys",      label: "API Keys",  icon: Key },
@@ -64,13 +65,6 @@ export function Sidebar() {
 
       {/* Bottom actions */}
       <div className="px-3 py-4 border-t border-gray-800 space-y-0.5">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-        >
-          <Settings className="w-4 h-4" />
-          Settings
-        </Link>
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-colors"

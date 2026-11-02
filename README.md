@@ -252,7 +252,7 @@ curl -s -X POST http://localhost:3000/agents/start \
   }' | jq .
 ```
 
-Then get a join token for a browser or app with `POST /rooms/demo/join`, and run `python demo.py` for a guided walkthrough.
+Then open **Live Demo** in the Console (`http://localhost:4000/demo`) to join the room with your camera and watch vision events arrive in real time, or run `python demo.py` for a scripted walkthrough.
 
 ### Production
 
@@ -419,6 +419,8 @@ ZONE_TYPE=restricted ZONE_ID=server-room-a python examples/security-soc/agent.py
 | | |
 |--|--|
 | [**Quick Start**](docs/quickstart.md) | Up and running in 5 minutes |
+| [**Self-Hosting Guide**](docs/self-hosting.md) | TLS, ports, backups, scaling, production checklist |
+| [**Customer Demo Script**](docs/demo-script.md) | A 15-minute walkthrough of what is verified |
 | [**Architecture & review**](docs/architecture.md) | How the services connect, data flow, resolved issues and known limitations |
 | [**Python SDK**](sdks/sense-py/README.md) | `SenseClient`, `SenseWire`, `LensStream` |
 
