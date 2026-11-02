@@ -104,6 +104,14 @@ Open **Live Demo** in the Console (`/demo`). Pick a room and the lenses to run, 
 - **vision events** arriving live, each with the sentence that is added to the agent's instructions,
 - a **real-time chat** panel for the room.
 
+<div align="center">
+
+<img src="docs/assets/live-demo.png" alt="Sense Console Live Demo: camera panel, live vision events and room chat" width="90%"/>
+
+<sub>The Live Demo page. Events above came from a still test photo fed in as the camera; the camera preview is blacked out in this screenshot.</sub>
+
+</div>
+
 Prefer a terminal? `python demo.py` runs a scripted walkthrough (and falls back to simulated output when no services are running). Presenting to a customer? See the [demo script](docs/demo-script.md).
 
 ---
